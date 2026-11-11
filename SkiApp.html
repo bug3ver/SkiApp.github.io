@@ -269,6 +269,7 @@ function users(){var K=["plan","cook","shop","exp","black","poll"],cnt={};K.forE
 function devSheet(id){var d=S.devices.filter(function(x){return x.id==id})[0];if(!d)return;
  var b=sheet('<h4>'+esc(d.name)+'</h4><div class="s" style="color:var(--mut);margin-bottom:14px">Gerät …'+esc(String(id).slice(-4))+'</div><div class="row"><button class="btn" data-x>Schließen</button><button class="btn d" data-del data-l="Entfernen">Entfernen</button></div>');
  b.querySelector("[data-x]").onclick=function(){b.remove()};armBtn(b.querySelector("[data-del]"),function(){del("devices",id);b.remove();refresh()})}
+function isKass(){var k=S.info[0]&&S.info[0].kass;return !k||nrm(me()).trim()==nrm(k).trim()}
 function vote(id,i){var go=function(){var r=S.poll.filter(function(x){return x.id==id})[0];if(!r)return;var k=mk();r.votes=r.votes||{};r.votes[k]=i;if(DB){var u={};u["votes."+k]=i;DB.collection("poll").doc(id).update(u)}else save();refresh()};
  if(me())return go();var b=sheet('<h4>Wie heißt du?</h4><label>Name (für die Umfragen)<input name="n"></label><div class="row"><button class="btn p" data-ok>Weiter</button></div>');
  b.querySelector("[data-ok]").onclick=function(){var v=b.querySelector("input").value.trim();if(!v)return;ME=v;try{localStorage.setItem("ski26me",v)}catch(e){}b.remove();go()}}
@@ -330,7 +331,7 @@ function exp(){
  return head("Ausgaben","exp")+'<div class="sum"><div><small>Gesamt</small><b>'+eur(all)+'</b></div><div><small>Ausgezahlt</small><b style="color:var(--ok)">'+eur(paid)+'</b></div><div><small>Offen</small><b style="color:#ff9aa4">'+eur(all-paid)+'</b></div></div>'+
  (ns.length?'<h3>'+(kw?'Kassenwart '+esc(kw)+' zahlt aus':'Noch auszuzahlen')+'</h3>'+ns.map(function(n){return '<div class="card pl" style="display:flex;align-items:center;gap:12px"><span style="font-size:24px">💸</span><div class="m"><div class="t">'+esc(n)+'</div></div><b>'+eur(by[n])+'</b></div>'}).join("")+'<h3>Alle Ausgaben</h3>':'')+
  (a.length?a.map(function(x){var d=dparts(x.date);
-  return '<div class="card"><div class="date"><b>'+d[0]+'</b><i>'+d[1]+'</i></div><div class="m" data-edit="exp" data-id="'+x.id+'"><div class="t">'+esc(x.who)+'</div><div class="s">'+eur(x.sum)+'</div></div><button class="chip '+(x.paid?'paid':'open')+'" data-tog="exp" data-id="'+x.id+'">'+(x.paid?'Ausgezahlt':'Offen')+'</button></div>'}).join("")
+  return '<div class="card"><div class="date"><b>'+d[0]+'</b><i>'+d[1]+'</i></div><div class="m" data-edit="exp" data-id="'+x.id+'"><div class="t">'+esc(x.who)+'</div><div class="s">'+eur(x.sum)+'</div></div>'+(isKass()?'<button class="chip '+(x.paid?'paid':'open')+'" data-tog="exp" data-id="'+x.id+'">'+(x.paid?'Ausgezahlt':'Offen')+'</button>':'<span class="chip '+(x.paid?'paid':'open')+'">'+(x.paid?'Ausgezahlt':'Offen')+'</span>')+'</div>'}).join("")
   :empty("💶","Füge über das „+“ Zeichen eine neue Ausgabe hinzu!"));
 }
 function black(){
@@ -396,7 +397,7 @@ document.addEventListener("click",function(e){
  if(t.dataset.go){cur=t.dataset.go;render()}
  else if(t.hasAttribute("data-admin"))admin();
  else if(t.dataset.add)openForm(t.dataset.add);
- else if(t.dataset.tog){var r=S[t.dataset.tog].filter(function(x){return x.id==t.dataset.id})[0];if(r){if(t.dataset.tog=="shop")r.done=!r.done;else r.paid=!r.paid;r.tby=me();r.tat=Date.now();put(t.dataset.tog,r);refresh()}}
+ else if(t.dataset.tog){if(t.dataset.tog=="exp"&&!isKass()){toast("Nur der Kassenwart darf den Status ändern");return}var r=S[t.dataset.tog].filter(function(x){return x.id==t.dataset.id})[0];if(r){if(t.dataset.tog=="shop")r.done=!r.done;else r.paid=!r.paid;r.tby=me();r.tat=Date.now();put(t.dataset.tog,r);refresh()}}
  else if(t.dataset.vote!==undefined)vote(t.dataset.id,+t.dataset.vote);
  else if(t.dataset.copy){try{navigator.clipboard.writeText(t.dataset.copy);t.textContent="Kopiert ✓"}catch(e){}}
  else if(t.hasAttribute("data-secret")){secretN++;clearTimeout(secretT);secretT=setTimeout(function(){secretN=0},1500);if(secretN>=5){secretN=0;adminLogin()}}
