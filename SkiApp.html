@@ -238,14 +238,18 @@ function snowOn(){try{return localStorage.getItem("ski26snow")!="0"}catch(e){ret
 function setSnow(v){SNOW=v;try{localStorage.setItem("ski26snow",v?"1":"0")}catch(e){}refresh()}
 var exitT=0;
 function toast(m){var t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},2200)}
-function guard(){try{history.pushState({g:1},"")}catch(e){}}
-function backGuard(){try{history.replaceState({b:1},"");guard()}catch(e){return}
+var hd=0,ex=0;
+function want(){return 1+(cur!="home"?1:0)+(document.querySelector(".sheet-bg")?1:0)}
+function syncHist(){var w=want();try{while(hd<w){history.pushState({d:hd+1},"");hd++}if(hd>w){var n=hd-w;hd=w;ex++;history.go(-n)}}catch(e){}}
+function backGuard(){
  window.addEventListener("popstate",function(){
+  if(ex>0){ex--;return}
+  if(hd>0)hd--;
   var sh=document.querySelector(".sheet-bg");
-  if(sh){sh.remove();guard();return}
-  if(cur!="home"){cur="home";render();guard();return}
-  if(exitT){clearTimeout(exitT);exitT=0;history.back();return}
-  exitT=setTimeout(function(){exitT=0},2500);toast("Nochmal zurück zum Beenden");guard()})}
+  if(sh){sh.remove();return}
+  if(cur!="home"){cur="home";render();return}
+  toast("Nochmal zurück zum Beenden")});
+ document.addEventListener("click",function(){setTimeout(syncHist,0)})}
 function vote(id,i){var go=function(){var r=S.poll.filter(function(x){return x.id==id})[0];if(!r)return;var k=mk();r.votes=r.votes||{};r.votes[k]=i;if(DB){var u={};u["votes."+k]=i;DB.collection("poll").doc(id).update(u)}else save();refresh()};
  if(me())return go();var b=sheet('<h4>Wie heißt du?</h4><label>Name (für die Umfragen)<input name="n"></label><div class="row"><button class="btn p" data-ok>Weiter</button></div>');
  b.querySelector("[data-ok]").onclick=function(){var v=b.querySelector("input").value.trim();if(!v)return;ME=v;try{localStorage.setItem("ski26me",v)}catch(e){}b.remove();go()}}
