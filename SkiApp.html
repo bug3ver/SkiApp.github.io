@@ -154,6 +154,7 @@ nav .scr button{flex:none;min-width:74px}
 .snowb{padding:1px 7px;font-size:12px;line-height:1.2;height:20px}
 .snowb.on{background:rgba(44,196,255,.25);border-color:var(--ac2)}
 .snowb.off{opacity:.45;filter:grayscale(1)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 100px);transform:translateX(-50%);background:rgba(10,24,42,.94);color:#fff;border:1px solid var(--line);padding:10px 18px;border-radius:99px;font-size:14px;white-space:nowrap;z-index:40;animation:pop .25s}
 </style>
 <script>window.FIREBASE_CONFIG={apiKey:"AIzaSyALOJBmTIZK8xXqswI3A-obtQbsRAwZ-EY",authDomain:"skiapp-ef7b2.firebaseapp.com",projectId:"skiapp-ef7b2",storageBucket:"skiapp-ef7b2.firebasestorage.app",messagingSenderId:"603404948431",appId:"1:603404948431:web:1e3a994b4af95e9e9db8ba"};window.VAPID_KEY="DEIN_VAPID_KEY";</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -235,6 +236,16 @@ function shopVis(x){return !!(x.tat&&dayOf(x.tat)==td())}
 var SNOW=true;
 function snowOn(){try{return localStorage.getItem("ski26snow")!="0"}catch(e){return SNOW}}
 function setSnow(v){SNOW=v;try{localStorage.setItem("ski26snow",v?"1":"0")}catch(e){}refresh()}
+var exitT=0;
+function toast(m){var t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},2200)}
+function guard(){try{history.pushState({g:1},"")}catch(e){}}
+function backGuard(){try{history.replaceState({b:1},"");guard()}catch(e){return}
+ window.addEventListener("popstate",function(){
+  var sh=document.querySelector(".sheet-bg");
+  if(sh){sh.remove();guard();return}
+  if(cur!="home"){cur="home";render();guard();return}
+  if(exitT){clearTimeout(exitT);exitT=0;history.back();return}
+  exitT=setTimeout(function(){exitT=0},2500);toast("Nochmal zurück zum Beenden");guard()})}
 function vote(id,i){var go=function(){var r=S.poll.filter(function(x){return x.id==id})[0];if(!r)return;var k=mk();r.votes=r.votes||{};r.votes[k]=i;if(DB){var u={};u["votes."+k]=i;DB.collection("poll").doc(id).update(u)}else save();refresh()};
  if(me())return go();var b=sheet('<h4>Wie heißt du?</h4><label>Name (für die Umfragen)<input name="n"></label><div class="row"><button class="btn p" data-ok>Weiter</button></div>');
  b.querySelector("[data-ok]").onclick=function(){var v=b.querySelector("input").value.trim();if(!v)return;ME=v;try{localStorage.setItem("ski26me",v)}catch(e){}b.remove();go()}}
@@ -370,7 +381,7 @@ document.addEventListener("click",function(e){
  else if(t.hasAttribute("data-ann")){if(t.dataset.arm)announce(t);else{t.dataset.arm="1";t.dataset.l=t.dataset.l||t.textContent;t.textContent="An alle senden? Nochmal tippen";t._tm=setTimeout(function(){delete t.dataset.arm;t.textContent=t.dataset.l},3500)}}
  else if(t.dataset.edit)openForm(t.dataset.edit,t.dataset.id);
 });
-initFb();initMsg();startName();if("serviceWorker" in navigator&&location.protocol=="https:")window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});setInterval(function(){if(cur=="plan"||cur=="home"||cur=="shop")refresh()},60000);setTimeout(function(){document.body.classList.add("ready")},1200);render();
+initFb();initMsg();startName();backGuard();if("serviceWorker" in navigator&&location.protocol=="https:")window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});setInterval(function(){if(cur=="plan"||cur=="home"||cur=="shop")refresh()},60000);setTimeout(function(){document.body.classList.add("ready")},1200);render();
 (function(){var c=document.getElementById("snow");if(!c||(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches))return;var x=c.getContext("2d"),W,H,P=[];function rs(){W=c.width=innerWidth;H=c.height=innerHeight}rs();addEventListener("resize",rs);for(var i=0;i<70;i++)P.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2.2+.6,s:Math.random()*.8+.3,d:Math.random()*6});function f(t){x.clearRect(0,0,W,H);if(!snowOn()){requestAnimationFrame(f);return}x.fillStyle="#fff";for(var i=0;i<P.length;i++){var p=P[i];p.y+=p.s;p.x+=Math.sin(t/1500+p.d)*.4;if(p.y>H){p.y=-5;p.x=Math.random()*W}x.globalAlpha=.3+p.r/4;x.beginPath();x.arc(p.x,p.y,p.r,0,6.3);x.fill()}requestAnimationFrame(f)}requestAnimationFrame(f)})();
 })();
 </script>
