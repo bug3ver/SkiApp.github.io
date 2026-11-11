@@ -217,8 +217,8 @@ var DEVF="";
 function devId(){try{var d=localStorage.getItem("ski26dev");if(!d){d=uid()+uid();localStorage.setItem("ski26dev",d)}return d}catch(e){return DEVF||(DEVF=uid()+uid())}}
 function askName(change){var b=sheet('<h4>'+(change?"Name ändern":"Willkommen! Wie ist dein Name?")+'</h4><label>Name<input name="n" value="'+esc(change?me():"")+'" autocomplete="off"></label><div class="row">'+(change?'<button class="btn" data-x>Abbrechen</button>':'')+'<button class="btn p" data-ok>Speichern</button></div>'),inp=b.querySelector("input");
  if(change)b.querySelector("[data-x]").onclick=function(){b.remove()};
- b.querySelector("[data-ok]").onclick=function(){var v=inp.value.trim();if(!v){inp.focus();return}ME=v;try{localStorage.setItem("ski26me",v);localStorage.setItem("ski26reg","1")}catch(e){}put("devices",{id:devId(),name:v,t:Date.now()});b.remove();refresh()}}
-function startName(){var go=function(){setTimeout(function(){askName()},700)};try{if(me()){if(!localStorage.getItem("ski26reg")){put("devices",{id:devId(),name:me(),t:Date.now()});localStorage.setItem("ski26reg","1")}}else go()}catch(e){if(!me())go()}}
+ b.querySelector("[data-ok]").onclick=function(){var v=inp.value.trim();if(!v){inp.focus();return}ME=v;try{localStorage.setItem("ski26me",v);localStorage.setItem("ski26reg","1")}catch(e){}put("devices",{id:devId(),name:v,t:((S.devices.filter(function(x){return x.id==devId()})[0]||{}).t||Date.now()),seen:Date.now()});b.remove();refresh()}}
+function startName(){var go=function(){setTimeout(function(){askName()},700)};try{if(me()){if(!localStorage.getItem("ski26reg")){put("devices",{id:devId(),name:me(),t:Date.now(),seen:Date.now()});localStorage.setItem("ski26reg","1")}else touchDev()}else go()}catch(e){if(!me())go()}}
 function log(){
  var T=[["plan","🎿","Skitag-Plan"],["cook","🍽️","Kochdienste"],["shop","🛒","Einkaufsliste"],["exp","💶","Ausgaben"],["black","🚫","Blacklist"],["poll","📊","Umfragen"]],cnt={};
  var fmt=function(t){return t?new Date(t).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""};
@@ -259,6 +259,14 @@ function blackHits(dish){var d=nrm(dish),hits=[];S.black.forEach(function(b){nrm
 function blackCheck(dish){var seen={},u=[];blackHits(dish).forEach(function(x){var k=x.wer+"|"+x.was;if(!seen[k]){seen[k]=1;u.push(x)}});if(!u.length)return;
  var b=sheet('<h4>⚠️ Blacklist-Treffer</h4><p style="margin:0 0 12px;color:var(--mut)">„'+esc(dish)+'“ passt eventuell nicht für:</p>'+u.map(function(x){return '<div class="card pl" style="margin-bottom:8px"><div class="m"><div class="t">'+esc(x.wer)+'</div><div class="s">mag oder verträgt nicht: '+esc(x.was)+'</div></div></div>'}).join("")+'<div class="row"><button class="btn p" data-x>Verstanden</button></div>');
  b.querySelector("[data-x]").onclick=function(){b.remove()}}
+function touchDev(){var n=me(),i=devId();if(!n)return;if(DB)DB.collection("devices").doc(i).set({name:n,seen:Date.now()},{merge:true});else{var d=S.devices.filter(function(x){return x.id==i})[0];if(d){d.seen=Date.now();d.name=n;save()}}}
+function users(){var K=["plan","cook","shop","exp","black","poll"],cnt={};K.forEach(function(k){S[k].forEach(function(x){if(x.by)cnt[x.by]=(cnt[x.by]||0)+1})});
+ var f=function(t){return t?new Date(t).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"–"},mine=devId();
+ var a=S.devices.slice().sort(function(x,y){return(y.seen||y.t||0)-(x.seen||x.t||0)});
+ return head("Nutzer &amp; Geräte")+'<div class="s" style="color:var(--mut);margin:0 4px 10px">'+a.length+(a.length==1?' Gerät':' Geräte')+' registriert</div>'+(a.length?a.map(function(d){return '<div class="card" data-dev="'+esc(d.id)+'"><span style="font-size:26px">📱</span><div class="m"><div class="t">'+esc(d.name)+(d.id==mine?' <span class="chip paid" style="padding:2px 8px">Dieses Gerät</span>':'')+'</div><div class="s">Gerät …'+esc(String(d.id).slice(-4))+' · registriert '+f(d.t)+'<br>zuletzt aktiv '+f(d.seen)+' · '+(cnt[d.name]||0)+(cnt[d.name]==1?' Eintrag':' Einträge')+'</div></div></div>'}).join(""):empty("📱","Noch keine Geräte registriert."))}
+function devSheet(id){var d=S.devices.filter(function(x){return x.id==id})[0];if(!d)return;
+ var b=sheet('<h4>'+esc(d.name)+'</h4><div class="s" style="color:var(--mut);margin-bottom:14px">Gerät …'+esc(String(id).slice(-4))+'</div><div class="row"><button class="btn" data-x>Schließen</button><button class="btn d" data-del data-l="Entfernen">Entfernen</button></div>');
+ b.querySelector("[data-x]").onclick=function(){b.remove()};armBtn(b.querySelector("[data-del]"),function(){del("devices",id);b.remove();refresh()})}
 function vote(id,i){var go=function(){var r=S.poll.filter(function(x){return x.id==id})[0];if(!r)return;var k=mk();r.votes=r.votes||{};r.votes[k]=i;if(DB){var u={};u["votes."+k]=i;DB.collection("poll").doc(id).update(u)}else save();refresh()};
  if(me())return go();var b=sheet('<h4>Wie heißt du?</h4><label>Name (für die Umfragen)<input name="n"></label><div class="row"><button class="btn p" data-ok>Weiter</button></div>');
  b.querySelector("[data-ok]").onclick=function(){var v=b.querySelector("input").value.trim();if(!v)return;ME=v;try{localStorage.setItem("ski26me",v)}catch(e){}b.remove();go()}}
@@ -330,7 +338,7 @@ function black(){
 }
 function navHtml(){var b=function(t){return '<button data-go="'+t[0]+'" class="'+(cur==t[0]?'on':'')+'"><span>'+t[1]+'</span>'+t[2]+'</button>'};return b(TABS[0])+'<div class="scr">'+TABS.slice(1).map(b).join("")+'</div>'}
 function navSet(){var n=document.getElementById("nav"),o=n.querySelector(".scr"),x=o?o.scrollLeft:0;n.innerHTML=navHtml();var sc=n.querySelector(".scr");sc.scrollLeft=x;var on=sc.querySelector(".on");if(on){var l=on.offsetLeft,r=l+on.offsetWidth;if(l<sc.scrollLeft)sc.scrollLeft=l-8;else if(r>sc.scrollLeft+sc.clientWidth)sc.scrollLeft=r-sc.clientWidth+8}}
-var VIEWS={home:home,cook:cook,shop:shop,exp:exp,black:black,plan:plan,poll:poll,info:info,log:log};
+var VIEWS={home:home,cook:cook,shop:shop,exp:exp,black:black,plan:plan,poll:poll,info:info,log:log,users:users};
 function render(){
  app.style.setProperty("--dx",cur=="home"?"-26px":"26px");app.classList.remove("pg");void app.offsetWidth;app.innerHTML=VIEWS[cur]();app.classList.add("pg");
  navSet();
@@ -376,13 +384,13 @@ function openForm(kind,id){
 }
 function admin(){
  var L=[["cook","Kochdienste","Bist Du sicher, dass Du die Abendessen-Dienste leeren willst?"],["shop","Einkaufsliste","Bist Du sicher, dass Du die Einkaufsliste leeren willst?"],["exp","Ausgaben","Bist Du sicher, dass Du die Ausgaben leeren willst?"],["black","Blacklist","Bist Du sicher, dass Du die Blacklist löschen willst?"],["plan","Skitag-Plan","Skitag-Plan wirklich leeren?"],["poll","Umfragen","Alle Umfragen wirklich löschen?"]];
- var b=sheet('<div class="adm"><h4>Admin</h4><div style="color:var(--mut);margin:-6px 0 14px;font-size:13px">Nutzer ('+S.devices.length+'): '+S.devices.map(function(d){return esc(d.name)}).join(", ")+'</div><button class="btn p" data-log>📋 Protokoll: Wer hat was eingetragen?</button>'+L.map(function(l){return '<button class="btn d" data-k="'+l[0]+'" data-l="'+l[1]+' leeren">'+l[1]+' leeren</button>'}).join("")+'<button class="btn" data-logout>Admin-Modus beenden</button><button class="btn" data-x>Schließen</button></div>');b.querySelector("[data-log]").onclick=function(){b.remove();cur="log";render()};b.querySelector("[data-logout]").onclick=function(){ADM=false;try{localStorage.removeItem("ski26admin")}catch(e){}b.remove();refresh()};
+ var b=sheet('<div class="adm"><h4>Admin</h4><div style="color:var(--mut);margin:-6px 0 14px;font-size:13px">Nutzer ('+S.devices.length+'): '+S.devices.map(function(d){return esc(d.name)}).join(", ")+'</div><button class="btn p" data-log>📋 Protokoll: Wer hat was eingetragen?</button><button class="btn p" data-users>👥 Nutzer &amp; Geräte</button>'+L.map(function(l){return '<button class="btn d" data-k="'+l[0]+'" data-l="'+l[1]+' leeren">'+l[1]+' leeren</button>'}).join("")+'<button class="btn" data-logout>Admin-Modus beenden</button><button class="btn" data-x>Schließen</button></div>');b.querySelector("[data-log]").onclick=function(){b.remove();cur="log";render()};b.querySelector("[data-users]").onclick=function(){b.remove();cur="users";render()};b.querySelector("[data-logout]").onclick=function(){ADM=false;try{localStorage.removeItem("ski26admin")}catch(e){}b.remove();refresh()};
  b.querySelector("[data-x]").onclick=function(){b.remove()};
  b.querySelectorAll("[data-k]").forEach(function(btn){armBtn(btn,function(){clr(btn.dataset.k);b.remove();refresh()},"Wirklich leeren? Nochmal tippen")});
 }
 
 document.addEventListener("click",function(e){
- var t=e.target.closest("[data-go],[data-add],[data-edit],[data-tog],[data-admin],[data-vote],[data-copy],[data-ann],[data-push],[data-secret],[data-name],[data-snow]");if(!t||t.closest(".sheet-bg"))return;
+ var t=e.target.closest("[data-go],[data-add],[data-edit],[data-tog],[data-admin],[data-vote],[data-copy],[data-ann],[data-push],[data-secret],[data-name],[data-snow],[data-dev]");if(!t||t.closest(".sheet-bg"))return;
  if(t.dataset.go){cur=t.dataset.go;render()}
  else if(t.hasAttribute("data-admin"))admin();
  else if(t.dataset.add)openForm(t.dataset.add);
@@ -390,6 +398,7 @@ document.addEventListener("click",function(e){
  else if(t.dataset.vote!==undefined)vote(t.dataset.id,+t.dataset.vote);
  else if(t.dataset.copy){try{navigator.clipboard.writeText(t.dataset.copy);t.textContent="Kopiert ✓"}catch(e){}}
  else if(t.hasAttribute("data-secret")){secretN++;clearTimeout(secretT);secretT=setTimeout(function(){secretN=0},1500);if(secretN>=5){secretN=0;adminLogin()}}
+ else if(t.dataset.dev)devSheet(t.dataset.dev);
  else if(t.hasAttribute("data-snow"))setSnow(!snowOn());
  else if(t.hasAttribute("data-name"))askName(true);
  else if(t.hasAttribute("data-push"))enablePush(t);
