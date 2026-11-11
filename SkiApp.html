@@ -155,6 +155,9 @@ nav .scr button{flex:none;min-width:74px}
 .snowb.on{background:rgba(44,196,255,.25);border-color:var(--ac2)}
 .snowb.off{opacity:.45;filter:grayscale(1)}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 100px);transform:translateX(-50%);background:rgba(10,24,42,.94);color:#fff;border:1px solid var(--line);padding:10px 18px;border-radius:99px;font-size:14px;white-space:nowrap;z-index:40;animation:pop .25s}
+.tr.hot{background:linear-gradient(135deg,rgba(150,90,255,.5),rgba(110,60,240,.4));border:1px solid rgba(190,150,255,.8);border-radius:14px;padding:10px 12px;margin:8px 0;cursor:pointer;box-shadow:0 0 18px -6px rgba(150,90,255,.9)}
+.tr.hot::after{content:"›";margin-left:auto;font-size:26px;line-height:1;align-self:center}
+.tr.hot+.tr{border-top:0}
 </style>
 <script>window.FIREBASE_CONFIG={apiKey:"AIzaSyALOJBmTIZK8xXqswI3A-obtQbsRAwZ-EY",authDomain:"skiapp-ef7b2.firebaseapp.com",projectId:"skiapp-ef7b2",storageBucket:"skiapp-ef7b2.firebasestorage.app",messagingSenderId:"603404948431",appId:"1:603404948431:web:1e3a994b4af95e9e9db8ba"};window.VAPID_KEY="DEIN_VAPID_KEY";</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -250,6 +253,12 @@ function backGuard(){
   if(cur!="home"){cur="home";render();return}
   toast("Nochmal zurück zum Beenden")});
  document.addEventListener("click",function(){setTimeout(syncHist,0)})}
+function nrm(t){return String(t||"").toLowerCase().replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"ss")}
+function stem(w){var r=w.replace(/(en|er|n|e|s)$/,"");return r.length>=4?r:w}
+function blackHits(dish){var d=nrm(dish),hits=[];S.black.forEach(function(b){nrm(b.was).split(/[,;\/&]|\bund\b/).forEach(function(tok){tok=tok.replace(/^(kein|keine|keinen|keiner|ohne|nicht)\s+/,"").trim();if(tok.length<3)return;if(d.indexOf(stem(tok))>-1)hits.push({wer:b.wer,was:b.was})})});return hits}
+function blackCheck(dish){var seen={},u=[];blackHits(dish).forEach(function(x){var k=x.wer+"|"+x.was;if(!seen[k]){seen[k]=1;u.push(x)}});if(!u.length)return;
+ var b=sheet('<h4>⚠️ Blacklist-Treffer</h4><p style="margin:0 0 12px;color:var(--mut)">„'+esc(dish)+'“ passt eventuell nicht für:</p>'+u.map(function(x){return '<div class="card pl" style="margin-bottom:8px"><div class="m"><div class="t">'+esc(x.wer)+'</div><div class="s">mag oder verträgt nicht: '+esc(x.was)+'</div></div></div>'}).join("")+'<div class="row"><button class="btn p" data-x>Verstanden</button></div>');
+ b.querySelector("[data-x]").onclick=function(){b.remove()}}
 function vote(id,i){var go=function(){var r=S.poll.filter(function(x){return x.id==id})[0];if(!r)return;var k=mk();r.votes=r.votes||{};r.votes[k]=i;if(DB){var u={};u["votes."+k]=i;DB.collection("poll").doc(id).update(u)}else save();refresh()};
  if(me())return go();var b=sheet('<h4>Wie heißt du?</h4><label>Name (für die Umfragen)<input name="n"></label><div class="row"><button class="btn p" data-ok>Weiter</button></div>');
  b.querySelector("[data-ok]").onclick=function(){var v=b.querySelector("input").value.trim();if(!v)return;ME=v;try{localStorage.setItem("ski26me",v)}catch(e){}b.remove();go()}}
@@ -263,11 +272,13 @@ function empty(e,t){return '<div class="empty"><span class="e">'+e+'</span>'+t+'
 
 function heute(){var t=td(),c=S.cook.filter(function(x){return x.date==t}),p=S.plan.filter(function(x){return x.date==t&&planOpen(x)}),k=mk(),
  np=S.poll.filter(function(x){return!(x.votes&&k&&x.votes[k]!=null)}).length;
- var R=[["🍽️",c.length?c.map(function(x){return '<b>'+esc(x.who)+'</b> kocht: '+esc(x.what)}).join("<br>"):"Heute ist noch kein Abendessen eingetragen"],
- ["🎿",p.length?p.map(function(x){return '<b>'+esc(x.station)+'</b>'+(x.time?' um '+esc(x.time)+' Uhr':'')+(x.who?' ('+esc(x.who)+')':'')}).join("<br>"):"Noch kein Skiziel für heute eingetragen"],
- ["🛒",S.shop.filter(function(x){return!x.done}).length+" Artikel offen auf der Einkaufsliste"]];
- if(np)R.push(["📊",np+(np==1?" Umfrage wartet":" Umfragen warten")+" auf deine Stimme"]);
- return '<div class="today"><h3 style="margin-top:0">Heute · '+new Date().toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})+'</h3>'+R.map(function(r){return '<div class="tr"><span>'+r[0]+'</span><div>'+r[1]+'</div></div>'}).join("")+
+ var pt=S.plan.filter(function(x){return x.date==t}),R=[],
+ cookH=c.length?c.map(function(x){return '<div style="font-size:17px;font-weight:600;line-height:1.25">'+esc(x.what)+'</div><div style="font-size:12px;color:var(--mut)">Kochgruppe: '+esc(x.who)+'</div>'}).join(""):"Heute ist noch kein Abendessen eingetragen";
+ if(!(pt.length&&!p.length))R.push(["🎿",p.length?p.map(function(x){return '<b>'+esc(x.station)+'</b>'+(x.time?' um '+esc(x.time)+' Uhr':'')+(x.who?' ('+esc(x.who)+')':'')}).join("<br>"):"Noch kein Skiziel für heute eingetragen"]);
+ if(np){var q=S.poll.filter(function(x){return!(x.votes&&k&&x.votes[k]!=null)});R.push(["📊",np==1?'<b>'+esc(q[0].q)+'</b><div style="font-size:12px;opacity:.9">Jetzt abstimmen</div>':'<b>'+np+' Umfragen</b><div style="font-size:12px;opacity:.9">Warten auf deine Stimme</div>',1])}
+ R.push(["🛒",'<b>'+S.shop.filter(function(x){return!x.done}).length+'</b> Artikel auf der Einkaufsliste']);
+ R.push(["🍽️",cookH]);
+ return '<div class="today"><h3 style="margin-top:0">Heute · '+new Date().toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})+'</h3>'+R.map(function(r){return '<div class="tr'+(r[2]?' hot':'')+'"'+(r[2]?' data-go="poll"':'')+'><span>'+r[0]+'</span><div>'+r[1]+'</div></div>'}).join("")+
  (pushReady()?'<div class="row" style="margin-top:10px;flex-wrap:wrap">'+(pushOn()?'<span class="chip paid">🔔 Push aktiv</span>':'<button class="chip" data-push>🔔 Push aktivieren</button>')+'<button class="chip" data-ann>🍽️ Abendessen eröffnen</button></div>':'')+'<div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;color:var(--mut);font-size:12px;margin-top:6px"><span>'+(DB?"🟢 Live synchronisiert":"⚪ Lokaler Modus")+'</span><a data-name style="color:var(--ac2);cursor:pointer;text-align:center">👤 '+esc(me()||"Name setzen")+'</a><button class="chip snowb '+(snowOn()?"on":"off")+'" data-snow style="justify-self:end" aria-label="Schneeeffekt">❄️</button></div></div>'}
 function home(){
  var t=function(go,e,n,sub){return '<button class="tile" data-go="'+go+'"><span class="e">'+e+'</span><span><b>'+n+'</b><small>'+sub+'</small></span></button>'};
@@ -291,7 +302,7 @@ function info(){var h=S.info[0]||{};
 function cook(){
  var a=S.cook.slice().sort(function(x,y){return (x.date||"").localeCompare(y.date||"")});
  return head("Kochdienste","cook")+(a.length?a.map(function(x){var d=dparts(x.date);
-  return '<div class="card" data-edit="cook" data-id="'+x.id+'"><div class="date"><b>'+d[0]+'</b><i>'+d[1]+'</i></div><div class="m"><div class="t">Kochgruppe: '+esc(x.who)+'</div><div class="s">'+esc(x.what)+'</div></div></div>'}).join("")
+  return '<div class="card" data-edit="cook" data-id="'+x.id+'"><div class="date"><b>'+d[0]+'</b><i>'+d[1]+'</i></div><div class="m"><div class="t" style="font-size:18px">'+esc(x.what)+'</div><div class="s">Kochgruppe: '+esc(x.who)+'</div></div></div>'}).join("")
   :empty("🍳","Hier können sich die Kochgruppen mit ihren geplanten Abendessen über das „+“ Zeichen eintragen.<br>Bitte macht dies, damit alle informiert sind, was es wann zu essen gibt!"));
 }
 function shop(){
@@ -357,7 +368,7 @@ function openForm(kind,id){
   if(o.sum!==undefined)o.sum=parseFloat(String(o.sum).replace(",","."))||0;
   if(rec){Object.keys(o).forEach(function(k){rec[k]=o[k]});rec.upd=me();rec.updAt=Date.now();put(kind,rec)}else{o.id=kind=="info"?"house":uid();if(kind=="shop")o.done=false;if(kind=="exp")o.paid=false;o.by=me();o.at=Date.now();put(kind,o)}
   if(kind=="shop"&&!rec){refresh();var ni=b.querySelector("[name=name]");er.style.color="var(--ok)";er.style.fontSize="14px";er.textContent="✓ "+o.name+" eingetragen";ni.value="";b.querySelector("[name=cat]").value=CATS[0];ni.focus();return}
-  b.remove();refresh()};
+  b.remove();refresh();if(kind=="cook")blackCheck((rec||o).what)};
  if(kind=="shop"){var inp=b.querySelector("[name=name]"),cs=b.querySelector("[name=cat]"),M=itemMap(),dl=document.createElement("datalist");dl.id="shopdl";dl.innerHTML=Object.keys(M).map(function(k){return '<option value="'+esc(k)+'">'}).join("");b.appendChild(dl);inp.setAttribute("list","shopdl");inp.setAttribute("autocomplete","off");
   inp.addEventListener("input",function(){var v=inp.value.trim().toLowerCase(),k=Object.keys(M).filter(function(x){return x.toLowerCase()==v})[0];if(k&&!rec)cs.value=M[k]})}
  var d=b.querySelector("[data-del]");
