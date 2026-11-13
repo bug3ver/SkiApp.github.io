@@ -297,7 +297,8 @@ function users(){var K=["plan","cook","shop","exp","black","poll"],cnt={};K.forE
 function devSheet(id){var d=S.devices.filter(function(x){return x.id==id})[0];if(!d)return;
  var b=sheet('<h4>'+esc(d.name)+'</h4><div class="s" style="color:var(--mut);margin-bottom:14px">Gerät …'+esc(String(id).slice(-4))+'</div><div class="row"><button class="btn" data-x>Schließen</button><button class="btn d" data-del data-l="Entfernen">Entfernen</button></div>');
  b.querySelector("[data-x]").onclick=function(){b.remove()};armBtn(b.querySelector("[data-del]"),function(){del("devices",id);b.remove();refresh()})}
-function isKass(){var k=S.info[0]&&S.info[0].kass;return !k||nrm(me()).trim()==nrm(k).trim()}
+function kassName(){var c=S.config.filter(function(x){return x.id=="kass"})[0];return c?(c.name||""):((S.info[0]&&S.info[0].kass)||"")}
+function isKass(){var k=kassName();return !k||nrm(me()).trim()==nrm(k).trim()}
 function isAct(x){return x.active!="Deaktiviert"}
 function canPoll(x){return !x.by||nrm(x.by)==nrm(me())||isAdmin()}
 function pollBlocks(){var k=mk(),a=S.poll.filter(function(p){return isAct(p)||(p.endAt&&Date.now()-p.endAt<36e5)});if(!a.length)return "";
@@ -355,13 +356,13 @@ function poll(){var k=mk(),vt=function(x){return !isAct(x)?2:(k&&x.votes&&x.vote
 function info(){var h=S.info[0]||{},tp=S.tips.slice().sort(function(a,b){return(a.at||0)-(b.at||0)});
  var dt=function(v){return v?new Date(v).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+" Uhr":""};
  var card=function(t,b){return '<div class="card pl"><div class="m"><h3 style="margin:0 0 6px">'+t+'</h3>'+b+'</div></div>'};
- var any=h.addr||h.pw||h.wifi||h.kass||h.kont||h.tel||h.an||h.ab;
+ var any=h.addr||h.pw||h.wifi||kassName()||h.kont||h.tel||h.an||h.ab;
  return head("Haus-Infos","info")+(any?"":empty("🏠","Trag über das ✎ Adresse, Ansprechpartner, WLAN und Anreise ein."))+
  (h.addr?card("Adresse",'<div class="t">'+esc(h.addr)+'</div><a class="chip" style="display:inline-block;margin-top:10px;text-decoration:none" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(h.addr)+'">📍 In Google Maps öffnen</a>'):'')+
  (h.an||h.ab?card("Anreise &amp; Abreise",(h.an?'<div class="t">Früheste Anreise: '+dt(h.an)+'</div>':'')+(h.ab?'<div class="t" style="margin-top:4px">Späteste Abreise: '+dt(h.ab)+'</div>':'')):'')+
  (h.kont||h.tel?card("Ansprechpartner",(h.kont?'<div class="t">'+esc(h.kont)+'</div>':'')+(h.tel?'<a class="chip" style="display:inline-block;margin-top:10px;text-decoration:none" href="tel:'+esc(h.tel.replace(/[^+0-9]/g,""))+'">📞 '+esc(h.tel)+'</a>':'')):'')+
  (h.pw||h.wifi?card("WLAN",(h.wifi?'<div class="t">'+esc(h.wifi)+'</div>':'')+(h.pw?'<div class="s">Passwort: <b>'+esc(h.pw)+'</b></div><button class="chip" style="margin-top:10px" data-copy="'+esc(h.pw)+'">Passwort kopieren</button>':'')):'')+
- (h.kass?card("Kassenwart",'<div class="t">'+esc(h.kass)+'</div>'):'')+
+ (kassName()?card("Kassenwart",'<div class="t">'+esc(kassName())+'</div>'):'')+
  '<h3>💡 Nützliches</h3>'+(tp.length?tp.map(function(x){return '<div class="card pl" data-edit="tips" data-id="'+x.id+'" style="cursor:pointer"><div class="m"><div class="t">'+esc(x.t)+'</div><div class="s" style="color:var(--tx);opacity:.9;white-space:pre-wrap">'+esc(x.x)+'</div></div></div>'}).join(""):'<div class="s" style="margin:0 4px 8px;color:var(--mut)">Noch nichts eingetragen, zum Beispiel „Wie funktioniert der Herd?“</div>')+
  '<button class="btn" data-add="tips" style="width:100%;margin-top:6px">＋ Nützliches eintragen</button>'}
 function cook(){
@@ -381,7 +382,7 @@ function shop(){
 }
 function exp(){
  var all=S.exp.reduce(function(a,x){return a+x.sum},0),paid=S.exp.filter(function(x){return x.paid}).reduce(function(a,x){return a+x.sum},0);
- var a=S.exp.slice().sort(function(x,y){return (y.date||"").localeCompare(x.date||"")}),by={};S.exp.forEach(function(x){if(!x.paid)by[x.who]=(by[x.who]||0)+x.sum});var ns=Object.keys(by),kw=S.info[0]&&S.info[0].kass;
+ var a=S.exp.slice().sort(function(x,y){return (y.date||"").localeCompare(x.date||"")}),by={};S.exp.forEach(function(x){if(!x.paid)by[x.who]=(by[x.who]||0)+x.sum});var ns=Object.keys(by),kw=kassName();
  return head("Ausgaben","exp")+'<div class="sum"><div><small>Gesamt</small><b>'+eur(all)+'</b></div><div><small>Ausgezahlt</small><b style="color:var(--ok)">'+eur(paid)+'</b></div><div><small>Offen</small><b style="color:#ff9aa4">'+eur(all-paid)+'</b></div></div>'+
  (ns.length?'<h3>'+(kw?'Kassenwart '+esc(kw)+' zahlt aus':'Noch auszuzahlen')+'</h3>'+ns.map(function(n){return '<div class="card pl" style="display:flex;align-items:center;gap:12px"><span style="font-size:24px">💸</span><div class="m"><div class="t">'+esc(n)+'</div></div><b>'+eur(by[n])+'</b></div>'}).join("")+'<h3>Alle Ausgaben</h3>':'')+
  (a.length?a.map(function(x){var d=dparts(x.date);
@@ -412,7 +413,7 @@ var FORMS={
 };
 FORMS.plan={title:"Skitag planen",f:[["date","Datum","date"],["station","Talstation","sel",null,STATIONS],["time","Uhrzeit (optional)","time"],["who","Wer fährt mit? (optional)","text"]],req:["date","station"]};
 FORMS.poll={title:"Neue Umfrage",f:[["q","Frage","text"],["opts","Antworten","area","Eine Antwort pro Zeile"],["active","Status","sel",null,["Aktiv","Deaktiviert"]]],req:["q","opts"]};
-FORMS.info={title:"Haus-Infos",f:[["addr","Adresse","text"],["kont","Ansprechpartner fürs Haus","text"],["tel","Telefonnummer","tel"],["an","Früheste Anreise","datetime-local"],["ab","Späteste Abreise","datetime-local"],["wifi","WLAN-Name","text"],["pw","WLAN-Passwort","text"],["kass","Kassenwart","text"]],req:[]};
+FORMS.info={title:"Haus-Infos",f:[["addr","Adresse","text"],["kont","Ansprechpartner fürs Haus","text"],["tel","Telefonnummer","tel"],["an","Früheste Anreise","datetime-local"],["ab","Späteste Abreise","datetime-local"],["wifi","WLAN-Name","text"],["pw","WLAN-Passwort","text"]],req:[]};
 FORMS.tips={title:"Nützliches eintragen",f:[["t","Thema (z. B. Herd, Heizung, Müll)","text"],["x","Beschreibung","area"]],req:["t","x"]};
 function sheet(html){var b=document.createElement("div");b.className="sheet-bg";b.innerHTML='<div class="sheet">'+html+'</div>';b.addEventListener("click",function(e){if(e.target==b)b.remove()});document.body.appendChild(b);return b}
 function armBtn(btn,fn,label){var armed=false;btn.addEventListener("click",function(){if(!armed){armed=true;btn.classList.add("arm");btn.textContent=label||"Sicher? Nochmal tippen";setTimeout(function(){armed=false;btn.classList.remove("arm");btn.textContent=btn.dataset.l},3500)}else fn()})}
@@ -443,7 +444,7 @@ function openForm(kind,id){
 }
 function admin(){
  var L=[["cook","Kochdienste","Bist Du sicher, dass Du die Abendessen-Dienste leeren willst?"],["shop","Einkaufsliste","Bist Du sicher, dass Du die Einkaufsliste leeren willst?"],["exp","Ausgaben","Bist Du sicher, dass Du die Ausgaben leeren willst?"],["black","Blacklist","Bist Du sicher, dass Du die Blacklist löschen willst?"],["plan","Skitag-Plan","Skitag-Plan wirklich leeren?"],["poll","Umfragen","Alle Umfragen wirklich löschen?"],["tips","Nützliches","Nützliches wirklich leeren?"]];
- var b=sheet('<div class="adm"><h4>Admin</h4><div style="color:var(--mut);margin:-6px 0 14px;font-size:13px">Nutzer ('+S.devices.length+'): '+S.devices.map(function(d){return esc(d.name)}).join(", ")+'</div><button class="btn p" data-log>📋 Protokoll: Wer hat was eingetragen?</button><button class="btn p" data-users>👥 Nutzer &amp; Geräte</button><button class="btn" data-fx>🎆 Feuerwerk im Hintergrund: '+(fwOn()?'An':'Aus')+'</button>'+L.map(function(l){return '<button class="btn d" data-k="'+l[0]+'" data-l="'+l[1]+' leeren">'+l[1]+' leeren</button>'}).join("")+'<button class="btn" data-logout>Admin-Modus beenden</button><button class="btn" data-x>Schließen</button></div>');b.querySelector("[data-log]").onclick=function(){b.remove();cur="log";render()};b.querySelector("[data-users]").onclick=function(){b.remove();cur="users";render()};b.querySelector("[data-fx]").onclick=function(){put("config",{id:"fx",on:!fwOn()});b.remove();refresh();fwSync()};b.querySelector("[data-logout]").onclick=function(){ADM=false;try{localStorage.removeItem("ski26admin")}catch(e){}b.remove();refresh()};
+ var b=sheet('<div class="adm"><h4>Admin</h4><div style="color:var(--mut);margin:-6px 0 14px;font-size:13px">Nutzer ('+S.devices.length+'): '+S.devices.map(function(d){return esc(d.name)}).join(", ")+'</div><button class="btn p" data-log>📋 Protokoll: Wer hat was eingetragen?</button><button class="btn p" data-users>👥 Nutzer &amp; Geräte</button><button class="btn" data-fx>🎆 Feuerwerk im Hintergrund: '+(fwOn()?'An':'Aus')+'</button><label style="margin-top:6px">Kassenwart (Name wie auf seinem Gerät)<input name="kw" value="'+esc(kassName())+'" autocomplete="off" placeholder="z. B. Tom"></label><button class="btn p" data-kw>💶 Kassenwart speichern</button>'+L.map(function(l){return '<button class="btn d" data-k="'+l[0]+'" data-l="'+l[1]+' leeren">'+l[1]+' leeren</button>'}).join("")+'<button class="btn" data-logout>Admin-Modus beenden</button><button class="btn" data-x>Schließen</button></div>');b.querySelector("[data-log]").onclick=function(){b.remove();cur="log";render()};b.querySelector("[data-users]").onclick=function(){b.remove();cur="users";render()};b.querySelector("[data-kw]").onclick=function(){var v=b.querySelector("[name=kw]").value.trim();put("config",{id:"kass",name:v});b.remove();refresh();toast(v?"Kassenwart: "+v:"Kassenwart entfernt")};b.querySelector("[data-fx]").onclick=function(){put("config",{id:"fx",on:!fwOn()});b.remove();refresh();fwSync()};b.querySelector("[data-logout]").onclick=function(){ADM=false;try{localStorage.removeItem("ski26admin")}catch(e){}b.remove();refresh()};
  b.querySelector("[data-x]").onclick=function(){b.remove()};
  b.querySelectorAll("[data-k]").forEach(function(btn){armBtn(btn,function(){clr(btn.dataset.k);b.remove();refresh()},"Wirklich leeren? Nochmal tippen")});
 }
