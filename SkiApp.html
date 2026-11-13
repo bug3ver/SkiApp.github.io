@@ -181,6 +181,12 @@ nav .scr button{flex:none;min-width:74px}
 .pblk{cursor:pointer;padding:8px 10px;margin:4px 0 8px;border-radius:12px;border:1px solid transparent}
 .pblk.hot{background:linear-gradient(135deg,rgba(150,90,255,.5),rgba(110,60,240,.4));border-color:rgba(190,150,255,.8);box-shadow:0 0 18px -6px rgba(150,90,255,.9)}
 .pblk .pq{margin-top:0}
+.card.xr{padding:7px 4px;gap:10px}
+.xr .t{font-size:16px}
+.xr .s{margin-top:1px}
+.xd{flex:none;width:46px;font-size:12px;color:var(--mut);line-height:1.2}
+.xa{flex:none;font-size:15px;text-align:right;min-width:64px}
+.xr .chip{padding:3px 9px;font-size:11px}
 </style>
 <script>window.FIREBASE_CONFIG={apiKey:"AIzaSyALOJBmTIZK8xXqswI3A-obtQbsRAwZ-EY",authDomain:"skiapp-ef7b2.firebaseapp.com",projectId:"skiapp-ef7b2",storageBucket:"skiapp-ef7b2.firebasestorage.app",messagingSenderId:"603404948431",appId:"1:603404948431:web:1e3a994b4af95e9e9db8ba"};window.VAPID_KEY="DEIN_VAPID_KEY";</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -252,11 +258,11 @@ function logBody(){
   if(k=="plan")return '🚡 '+esc(x.station)+' · '+d[0]+'. '+d[1]+(x.time?' '+esc(x.time):'');
   if(k=="cook")return 'Kochgruppe '+esc(x.who)+': '+esc(x.what)+' ('+d[0]+'. '+d[1]+')';
   if(k=="shop")return esc(x.name)+' ('+esc(x.cat)+')'+(x.done?' ✓':'');
-  if(k=="exp")return esc(x.who)+': '+eur(x.sum)+(x.paid?' · ausgezahlt':'');
+  if(k=="exp")return esc(x.who)+(x.wof?' – '+esc(x.wof):'')+': '+eur(x.sum)+(x.paid?' · ausgezahlt':'');
   if(k=="black")return esc(x.wer)+': '+esc(x.was);
   var v=x.votes||{};return esc(x.q)+' – Stimmen: '+(Object.keys(v).map(function(n){return esc(n.replace(/_/g," "))+' ('+esc((x.opts||[])[v[n]])+')'}).join(", ")||"keine")};
  var terms=nrm(logQ).split(/\s+/).filter(Boolean);
- var match=function(x){var v=x.votes||{},h=nrm([x.by,x.upd,x.tby,x.who,x.wer,x.was,x.what,x.name,x.cat,x.station,x.q,x.date,x.time,(x.opts||[]).join(" "),Object.keys(v).join(" ")].join(" "));return terms.every(function(t){return h.indexOf(t)>-1})};
+ var match=function(x){var v=x.votes||{},h=nrm([x.by,x.upd,x.tby,x.who,x.wer,x.was,x.what,x.wof,x.name,x.cat,x.station,x.q,x.date,x.time,(x.opts||[]).join(" "),Object.keys(v).join(" ")].join(" "));return terms.every(function(t){return h.indexOf(t)>-1})};
  return T.map(function(t){var all=S[t[0]],a=all.filter(match).sort(function(x,y){return(y.at||0)-(x.at||0)}),open=terms.length?a.length>0:!!logOpen[t[0]];
   if(terms.length&&!a.length)return "";
   return '<button class="lh" data-lg="'+t[0]+'"><span>'+(open?'▾':'▸')+'</span> '+t[1]+' '+t[2]+' <b>('+(terms.length?a.length+'/':'')+all.length+')</b></button>'+(open?(a.length?a.map(function(x){return '<div class="card pl"><div class="m"><div class="t" style="font-size:15px">'+sum(t[0],x)+'</div><div class="s">von <b>'+esc(x.by||"unbekannt")+'</b>'+(x.at?' · '+fmt(x.at):'')+(x.upd?' · geändert von '+esc(x.upd)+' '+fmt(x.updAt):'')+(x.tby?' · '+(t[0]=="shop"?(x.done?"abgehakt":"zurückgesetzt"):(x.paid?"ausgezahlt":"zurückgesetzt"))+' von '+esc(x.tby):'')+'</div></div></div>'}).join(""):'<div class="s" style="margin:0 4px 8px;color:var(--mut)">Noch nichts eingetragen</div>'):'')}).join("")||'<div class="empty">Keine Treffer</div>'}
@@ -318,6 +324,7 @@ function fwTick(){if(!FW.on||!FW.c)return;var x=FW.x,W=FW.c.width,H=FW.c.height;
  FW.raf=requestAnimationFrame(fwTick)}
 function fwSync(){var want=fwOn()&&!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);if(want&&!FW.on)fwStart();else if(!want&&FW.on)fwStop()}
 setInterval(fwSync,1000);
+function billNote(){var k=kassName(),b=sheet('<h4>🧾 Kassenbon aufheben</h4><p style="margin:0 0 14px;line-height:1.45">Bitte hebe den Kassenbon für <b>'+(k?esc(k):"den Kassenwart")+'</b> und die Abrechnung auf.</p><div class="row"><button class="btn p" data-x>Verstanden</button></div>');b.querySelector("[data-x]").onclick=function(){b.remove()}}
 function vote(id,i){var go=function(){var r=S.poll.filter(function(x){return x.id==id})[0];if(!r||!isAct(r))return;var k=mk();r.votes=r.votes||{};r.votes[k]=i;if(DB){var u={};u["votes."+k]=i;DB.collection("poll").doc(id).update(u)}else save();refresh()};
  if(me())return go();var b=sheet('<h4>Wie heißt du?</h4><label>Name (für die Umfragen)<input name="n"></label><div class="row"><button class="btn p" data-ok>Weiter</button></div>');
  b.querySelector("[data-ok]").onclick=function(){var v=b.querySelector("input").value.trim();if(!v)return;ME=v;try{localStorage.setItem("ski26me",v)}catch(e){}b.remove();go()}}
@@ -356,13 +363,13 @@ function poll(){var k=mk(),vt=function(x){return !isAct(x)?2:(k&&x.votes&&x.vote
 function info(){var h=S.info[0]||{},tp=S.tips.slice().sort(function(a,b){return(a.at||0)-(b.at||0)});
  var dt=function(v){return v?new Date(v).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+" Uhr":""};
  var card=function(t,b){return '<div class="card pl"><div class="m"><h3 style="margin:0 0 6px">'+t+'</h3>'+b+'</div></div>'};
- var any=h.addr||h.pw||h.wifi||kassName()||h.kont||h.tel||h.an||h.ab;
+ var any=h.addr||h.pw||h.wifi||h.kont||h.tel||h.an||h.ab;
  return head("Haus-Infos","info")+(any?"":empty("🏠","Trag über das ✎ Adresse, Ansprechpartner, WLAN und Anreise ein."))+
  (h.addr?card("Adresse",'<div class="t">'+esc(h.addr)+'</div><a class="chip" style="display:inline-block;margin-top:10px;text-decoration:none" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(h.addr)+'">📍 In Google Maps öffnen</a>'):'')+
  (h.an||h.ab?card("Anreise &amp; Abreise",(h.an?'<div class="t">Früheste Anreise: '+dt(h.an)+'</div>':'')+(h.ab?'<div class="t" style="margin-top:4px">Späteste Abreise: '+dt(h.ab)+'</div>':'')):'')+
  (h.kont||h.tel?card("Ansprechpartner",(h.kont?'<div class="t">'+esc(h.kont)+'</div>':'')+(h.tel?'<a class="chip" style="display:inline-block;margin-top:10px;text-decoration:none" href="tel:'+esc(h.tel.replace(/[^+0-9]/g,""))+'">📞 '+esc(h.tel)+'</a>':'')):'')+
  (h.pw||h.wifi?card("WLAN",(h.wifi?'<div class="t">'+esc(h.wifi)+'</div>':'')+(h.pw?'<div class="s">Passwort: <b>'+esc(h.pw)+'</b></div><button class="chip" style="margin-top:10px" data-copy="'+esc(h.pw)+'">Passwort kopieren</button>':'')):'')+
- (kassName()?card("Kassenwart",'<div class="t">'+esc(kassName())+'</div>'):'')+
+ 
  '<h3>💡 Nützliches</h3>'+(tp.length?tp.map(function(x){return '<div class="card pl" data-edit="tips" data-id="'+x.id+'" style="cursor:pointer"><div class="m"><div class="t">'+esc(x.t)+'</div><div class="s" style="color:var(--tx);opacity:.9;white-space:pre-wrap">'+esc(x.x)+'</div></div></div>'}).join(""):'<div class="s" style="margin:0 4px 8px;color:var(--mut)">Noch nichts eingetragen, zum Beispiel „Wie funktioniert der Herd?“</div>')+
  '<button class="btn" data-add="tips" style="width:100%;margin-top:6px">＋ Nützliches eintragen</button>'}
 function cook(){
@@ -386,7 +393,7 @@ function exp(){
  return head("Ausgaben","exp")+'<div class="sum"><div><small>Gesamt</small><b>'+eur(all)+'</b></div><div><small>Ausgezahlt</small><b style="color:var(--ok)">'+eur(paid)+'</b></div><div><small>Offen</small><b style="color:#ff9aa4">'+eur(all-paid)+'</b></div></div>'+
  (ns.length?'<h3>'+(kw?'Kassenwart '+esc(kw)+' zahlt aus':'Noch auszuzahlen')+'</h3>'+ns.map(function(n){return '<div class="card pl" style="display:flex;align-items:center;gap:12px"><span style="font-size:24px">💸</span><div class="m"><div class="t">'+esc(n)+'</div></div><b>'+eur(by[n])+'</b></div>'}).join("")+'<h3>Alle Ausgaben</h3>':'')+
  (a.length?a.map(function(x){var d=dparts(x.date);
-  return '<div class="card"><div class="date"><b>'+d[0]+'</b><i>'+d[1]+'</i></div><div class="m" data-edit="exp" data-id="'+x.id+'"><div class="t">'+esc(x.who)+'</div><div class="s">'+eur(x.sum)+'</div></div>'+(isKass()?'<button class="chip '+(x.paid?'paid':'open')+'" data-tog="exp" data-id="'+x.id+'">'+(x.paid?'Ausgezahlt':'Offen')+'</button>':'<span class="chip '+(x.paid?'paid':'open')+'">'+(x.paid?'Ausgezahlt':'Offen')+'</span>')+'</div>'}).join("")
+  return '<div class="card sm xr"><div class="xd">'+d[0]+'. '+d[1]+'</div><div class="m" data-edit="exp" data-id="'+x.id+'"><div class="t">'+esc(x.who)+'</div>'+(x.wof?'<div class="s">'+esc(x.wof)+'</div>':'')+'</div><b class="xa">'+eur(x.sum)+'</b>'+(isKass()?'<button class="chip '+(x.paid?'paid':'open')+'" data-tog="exp" data-id="'+x.id+'">'+(x.paid?'Ausgezahlt':'Offen')+'</button>':'<span class="chip '+(x.paid?'paid':'open')+'">'+(x.paid?'Ausgezahlt':'Offen')+'</span>')+'</div>'}).join("")
   :empty("💶","Füge über das „+“ Zeichen eine neue Ausgabe hinzu!"));
 }
 function black(){
@@ -408,7 +415,7 @@ function refresh(){var y=window.scrollY;app.innerHTML=VIEWS[cur]();navSet();wind
 var FORMS={
  cook:{title:"Abendessen",f:[["date","Datum","date"],["who","Wer kocht?","text","Teilnehmer bitte mit Komma trennen!"],["what","Was gibt es?","area"]],req:["date","who","what"]},
  shop:{title:"Auf Einkaufsliste setzen",f:[["name","Lebensmittel","text"],["cat","Kategorie","sel"]],req:["name"]},
- exp:{title:"Neue Ausgabe",f:[["date","Datum","date"],["who","Wer hat bezahlt / wofür?","text"],["sum","Summe in €","num"]],req:["date","who","sum"]},
+ exp:{title:"Neue Ausgabe",f:[["date","Datum","date"],["who","Wer hat bezahlt?","text"],["wof","Wofür?","text"],["sum","Summe in €","num"]],req:["date","who","wof","sum"]},
  black:{title:"Neuer Blacklist-Eintrag",f:[["wer","Wer?","text"],["was","Was magst Du nicht o. bist allergisch dagegen?","text"]],req:["wer","was"]}
 };
 FORMS.plan={title:"Skitag planen",f:[["date","Datum","date"],["station","Talstation","sel",null,STATIONS],["time","Uhrzeit (optional)","time"],["who","Wer fährt mit? (optional)","text"]],req:["date","station"]};
@@ -436,7 +443,7 @@ function openForm(kind,id){
   if(o.sum!==undefined)o.sum=parseFloat(String(o.sum).replace(",","."))||0;
   if(rec){Object.keys(o).forEach(function(k){rec[k]=o[k]});rec.upd=me();rec.updAt=Date.now();put(kind,rec)}else{o.id=kind=="info"?"house":uid();if(kind=="shop")o.done=false;if(kind=="exp")o.paid=false;o.by=me();o.at=Date.now();put(kind,o)}
   if(kind=="shop"&&!rec){refresh();var ni=b.querySelector("[name=name]");er.style.color="var(--ok)";er.style.fontSize="14px";er.textContent="✓ "+o.name+" eingetragen";ni.value="";b.querySelector("[name=cat]").value=CATS[0];ni.focus();return}
-  b.remove();refresh();if(kind=="cook")blackCheck((rec||o).what)};
+  b.remove();refresh();if(kind=="cook")blackCheck((rec||o).what);if(kind=="exp"&&!rec)billNote()};
  if(kind=="shop"){var inp=b.querySelector("[name=name]"),cs=b.querySelector("[name=cat]"),M=itemMap(),dl=document.createElement("datalist");dl.id="shopdl";dl.innerHTML=Object.keys(M).map(function(k){return '<option value="'+esc(k)+'">'}).join("");b.appendChild(dl);inp.setAttribute("list","shopdl");inp.setAttribute("autocomplete","off");
   inp.addEventListener("input",function(){var v=inp.value.trim().toLowerCase(),k=Object.keys(M).filter(function(x){return x.toLowerCase()==v})[0];if(k&&!rec)cs.value=M[k]})}
  var d=b.querySelector("[data-del]");
