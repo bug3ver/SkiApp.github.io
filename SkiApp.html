@@ -193,6 +193,9 @@ nav .scr button{flex:none;min-width:74px}
 .infobox{display:flex;gap:10px;padding:10px 12px;margin:0 0 12px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.06);font-size:13px;line-height:1.4;color:var(--mut)}
 .infobox b{color:var(--tx)}
 .bh{flex:none;align-self:center;padding:3px 9px;border-radius:99px;background:rgba(255,93,108,.2);border:1px solid rgba(255,93,108,.6);font-size:12px;font-weight:700;color:#ffb3bb;cursor:pointer}
+.tr[data-go]{cursor:pointer;border-radius:10px;margin:0 -6px;padding-left:6px;padding-right:6px;transition:background .15s}
+.tr[data-go]:active{background:rgba(255,255,255,.1)}
+@media (hover:hover){.tr[data-go]:hover{background:rgba(255,255,255,.06)}}
 </style>
 <script>window.FIREBASE_CONFIG={apiKey:"AIzaSyALOJBmTIZK8xXqswI3A-obtQbsRAwZ-EY",authDomain:"skiapp-ef7b2.firebaseapp.com",projectId:"skiapp-ef7b2",storageBucket:"skiapp-ef7b2.firebasestorage.app",messagingSenderId:"603404948431",appId:"1:603404948431:web:1e3a994b4af95e9e9db8ba"};window.AUTH_EMAIL="ski2026@gruppe.app";window.VAPID_KEY="DEIN_VAPID_KEY";</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -347,6 +350,8 @@ function setTipHome(id,on){var r=S.tips.filter(function(x){return x.id==id})[0];
 function tipAsk(id){var b=sheet('<h4>📌 Auf der Startseite zeigen?</h4><p style="margin:0 0 14px;line-height:1.45">Soll dieser Eintrag auch oben in der Heute-Kachel auf der Startseite erscheinen? Nach 24 Stunden verschwindet er dort automatisch wieder.</p><div class="row"><button class="btn" data-x>Nein</button><button class="btn p" data-ok>Ja</button></div>');
  b.querySelector("[data-x]").onclick=function(){b.remove()};b.querySelector("[data-ok]").onclick=function(){setTipHome(id,true);b.remove()}}
 function bhCount(d){var seen={},n=0;blackHits(d).forEach(function(x){var k=x.wer+"|"+x.was;if(!seen[k]){seen[k]=1;n++}});return n}
+var NAV={"Ellmau – Hartkaiserbahn":"Hartkaiserbahn Talstation, Ellmau, Tirol, Österreich","Going – Astbergbahn":"Astbergbahn Talstation, Going am Wilden Kaiser, Tirol, Österreich","Scheffau – Brandstadlbahn":"Brandstadlbahn Talstation, Scheffau am Wilden Kaiser, Tirol, Österreich","Söll – Hochsöll-Bahn":"Hochsöllbahn Talstation, Söll, Tirol, Österreich","Itter – Salvistabahn":"Salvistabahn Talstation, Itter, Tirol, Österreich","Hopfgarten – Hohe-Salve-Bahn":"Hohe Salve Bahn Talstation, Hopfgarten im Brixental, Tirol, Österreich","Brixen – SkiWelt-Bahn":"SkiWelt Bahn Talstation, Brixen im Thale, Tirol, Österreich","Brixen – Zinsbergbahn":"Zinsbergbahn Talstation, Brixen im Thale, Tirol, Österreich","Westendorf – Ki-West-Bahn":"Ki-West Bahn Talstation, Westendorf, Tirol, Österreich","Westendorf – Alpenrosenbahn":"Alpenrosenbahn Talstation, Westendorf, Tirol, Österreich"};
+function navUrl(st){var q=NAV[st]||(st&&st!="Anderes Ziel"?st:"");return q?"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(q)+"&travelmode=driving":""}
 function vote(id,i){var go=function(){var r=S.poll.filter(function(x){return x.id==id})[0];if(!r||!isAct(r))return;var k=mk();r.votes=r.votes||{};r.votes[k]=i;if(DB){var u={};u["votes."+k]=i;DB.collection("poll").doc(id).update(u)}else save();refresh()};
  if(me())return go();var b=sheet('<h4>Wie heißt du?</h4><label>Name (für die Umfragen)<input name="n"></label><div class="row"><button class="btn p" data-ok>Weiter</button></div>');
  b.querySelector("[data-ok]").onclick=function(){var v=b.querySelector("input").value.trim();if(!v)return;ME=v;try{localStorage.setItem("ski26me",v)}catch(e){}b.remove();go()}}
@@ -363,10 +368,10 @@ function heute(){var t=td(),c=S.cook.filter(function(x){return x.date==t}),p=S.p
  var pt=S.plan.filter(function(x){return x.date==t}),R=[],
  cookH=c.length?c.map(function(x){return '<div style="font-size:17px;font-weight:600;line-height:1.25">'+esc(x.what)+'</div><div style="font-size:12px;color:var(--mut)">Kochgruppe: '+esc(x.who)+'</div>'}).join(""):"Heute ist noch kein Abendessen eingetragen";
  S.tips.filter(tipOn).sort(function(a,b){return b.homeAt-a.homeAt}).forEach(function(x){R.push(["💡",'<b>'+esc(x.t)+'</b><div style="font-size:13px;white-space:pre-wrap;opacity:.9">'+esc(x.x)+'</div>',0,"info"])});
- if(!(pt.length&&!p.length))R.push(["🎿",p.length?p.map(function(x){return '<b>'+esc(x.station)+'</b>'+(x.time?' um '+esc(x.time)+' Uhr':'')+(x.who?' ('+esc(x.who)+')':'')}).join("<br>"):"Noch kein Skiziel für heute eingetragen"]);
+ if(!(pt.length&&!p.length))R.push(["🎿",p.length?p.map(function(x){return '<b>'+esc(x.station)+'</b>'+(x.time?' um '+esc(x.time)+' Uhr':'')+(x.who?' ('+esc(x.who)+')':'')}).join("<br>"):"Noch kein Skiziel für heute eingetragen",0,p.length?"plan":""]);
  var pbl=pollBlocks();if(pbl)R.push(["📊",pbl]);
- var os=S.shop.filter(function(x){return!x.done}).length;if(os)R.push(["🛒",'<b>'+os+'</b> Artikel auf der Einkaufsliste']);
- R.push(["🍽️",cookH]);
+ var os=S.shop.filter(function(x){return!x.done}).length;if(os)R.push(["🛒",'<b>'+os+'</b> Artikel auf der Einkaufsliste',0,"shop"]);
+ R.push(["🍽️",cookH,0,c.length?"cook":""]);
  return '<div class="today"><h3 style="margin-top:0">Heute · '+new Date().toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})+'</h3>'+R.map(function(r){return '<div class="tr"'+(r[3]?' data-go="'+r[3]+'" style="cursor:pointer"':'')+'><span>'+r[0]+'</span><div>'+r[1]+'</div></div>'}).join("")+
  (pushReady()?'<div class="row" style="margin-top:10px;flex-wrap:wrap">'+(pushOn()?'<span class="chip paid">🔔 Push aktiv</span>':'<button class="chip" data-push>🔔 Push aktivieren</button>')+'<button class="chip" data-ann>🍽️ Abendessen eröffnen</button></div>':'')+'<div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;color:var(--mut);font-size:12px;margin-top:6px"><span>'+(DB?"🟢 Live synchronisiert":"⚪ Lokaler Modus")+'</span><a data-name style="color:var(--ac2);cursor:pointer;text-align:center">👤 '+esc(me()||"Name setzen")+'</a><button class="chip snowb '+(snowOn()?"on":"off")+'" data-snow style="justify-self:end" aria-label="Schneeeffekt">❄️</button></div></div>'}
 function home(){
@@ -379,7 +384,7 @@ function home(){
  '<h3>Unser Haus</h3><div class="grid g-home">'+t("info","🏠","Haus-Infos","Adresse &amp; WLAN")+navTile()+'</div>';
 }
 function plan(){var a=S.plan.filter(planOpen).sort(function(x,y){return(x.date+(x.time||"")).localeCompare(y.date+(y.time||""))});
- return head("Skitag-Plan","plan")+(a.length?a.map(function(x){var d=dparts(x.date);return '<div class="card" data-edit="plan" data-id="'+x.id+'"><div class="date"><b>'+d[0]+'</b><i>'+d[1]+'</i></div><div class="m"><div class="t">🚡 '+esc(x.station)+'</div><div class="s">'+(x.time?esc(x.time)+' Uhr · ':'')+esc(x.who||"alle")+'</div></div></div>'}).join(""):empty("🎿","Trag über das „+“ ein, wo ihr als Nächstes Ski fahren wollt. Einfach die Talstation aus der Liste wählen."));}
+ return head("Skitag-Plan","plan")+(a.length?a.map(function(x){var d=dparts(x.date);return '<div class="card" data-edit="plan" data-id="'+x.id+'"><div class="date"><b>'+d[0]+'</b><i>'+d[1]+'</i></div><div class="m"><div class="t">🚡 '+esc(x.station)+'</div><div class="s">'+(x.time?esc(x.time)+' Uhr · ':'')+esc(x.who||"alle")+'</div>'+(navUrl(x.station)?'<a class="chip" data-nav href="'+navUrl(x.station)+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;text-decoration:none">📍 Navigation starten</a>':'')+'</div></div>'}).join(""):empty("🎿","Trag über das „+“ ein, wo ihr als Nächstes Ski fahren wollt. Einfach die Talstation aus der Liste wählen."));}
 function poll(){var k=mk(),vt=function(x){return !isAct(x)?2:(k&&x.votes&&x.votes[k]!=null?1:0)};return head("Umfragen","poll")+(S.poll.length?S.poll.slice().sort(function(a,b){return vt(a)-vt(b)}).map(function(p){var v=p.votes||{},n=Object.keys(v).length,my=v[k],off=vt(p)==2,dn=vt(p)==1;
  return '<div class="card pl '+(off?'off':dn?'voted':'todo')+'"><div class="m"><div class="t">'+esc(p.q)+' <span class="chip '+(dn?'paid':'')+'" style="padding:2px 8px;font-size:11px">'+(off?'Beendet':dn?'✓ Abgestimmt':'Offen')+'</span>'+(canPoll(p)?' <button class="chip" data-pact="'+p.id+'">'+(off?'▶ Aktivieren':'⏸ Beenden')+'</button>':'')+' <button class="chip" data-edit="poll" data-id="'+p.id+'">✎</button></div>'+(p.opts||[]).map(function(o,i){var c=Object.keys(v).filter(function(x){return v[x]==i}).length;
  return '<button class="opt'+(k&&my===i?' me':'')+'"'+(off?' disabled':'')+' data-vote="'+i+'" data-id="'+p.id+'"><i style="width:'+(n?Math.round(c/n*100):0)+'%"></i><span>'+esc(o)+'</span><b>'+c+'</b></button>'}).join("")+'<div class="s">'+n+(n==1?' Stimme':' Stimmen')+'</div></div></div>'}).join(""):empty("📊","Starte über das „+“ eine Umfrage für die ganze Gruppe, zum Beispiel: Pizza oder Pasta?"));}
@@ -480,7 +485,7 @@ function admin(){
 }
 
 document.addEventListener("click",function(e){
- var t=e.target.closest("[data-go],[data-add],[data-edit],[data-tog],[data-admin],[data-vote],[data-copy],[data-ann],[data-push],[data-secret],[data-name],[data-snow],[data-dev],[data-lg],[data-q],[data-pact],[data-tip],[data-bh]");if(!t||t.closest(".sheet-bg"))return;
+ var t=e.target.closest("[data-go],[data-add],[data-edit],[data-tog],[data-admin],[data-vote],[data-copy],[data-ann],[data-push],[data-secret],[data-name],[data-snow],[data-dev],[data-lg],[data-q],[data-pact],[data-tip],[data-bh],[data-nav]");if(!t||t.closest(".sheet-bg"))return;
  if(t.dataset.go){cur=t.dataset.go;render()}
  else if(t.hasAttribute("data-admin"))admin();
  else if(t.dataset.add)openForm(t.dataset.add);
@@ -493,6 +498,7 @@ document.addEventListener("click",function(e){
  else if(t.dataset.pact){var pr=S.poll.filter(function(x){return x.id==t.dataset.pact})[0];if(pr){pr.active=isAct(pr)?"Deaktiviert":"Aktiv";var u={active:pr.active};if(pr.active=="Deaktiviert"){pr.endAt=Date.now();u.endAt=pr.endAt}if(DB)DB.collection("poll").doc(pr.id).update(u);else save();refresh()}}
  else if(t.dataset.tip){var tr=S.tips.filter(function(x){return x.id==t.dataset.tip})[0];if(tr)setTipHome(tr.id,!tipOn(tr))}
  else if(t.dataset.bh){var cr=S.cook.filter(function(x){return x.id==t.dataset.bh})[0];if(cr)blackCheck(cr.what)}
+ else if(t.hasAttribute("data-nav")){}
  else if(t.dataset.dev)devSheet(t.dataset.dev);
  else if(t.hasAttribute("data-snow"))setSnow(!snowOn());
  else if(t.hasAttribute("data-name"))askName(true);
