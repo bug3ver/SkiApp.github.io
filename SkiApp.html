@@ -314,14 +314,14 @@ function logBody(){
  var T=[["plan","🎿","Skitag-Plan"],["cook","🍽️","Kochdienste"],["shop","🛒","Einkaufsliste"],["exp","💶","Ausgaben"],["black","🚫","Blacklist"],["poll","📊","Umfragen"]];
  var fmt=function(t){return t?new Date(t).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""};
  var sum=function(k,x){var d=dparts(x.date);
-  if(k=="plan")return '🚡 '+esc(x.station)+' · '+d[0]+'. '+d[1]+(x.time?' '+esc(x.time):'');
+  if(k=="plan")return '🚡 '+esc(stLabel(x))+' · '+d[0]+'. '+d[1]+(x.time?' '+esc(x.time):'');
   if(k=="cook")return 'Kochgruppe '+esc(x.who)+': '+esc(x.what)+' ('+d[0]+'. '+d[1]+')';
   if(k=="shop")return esc(x.name)+' ('+esc(x.cat)+')'+(x.done?' ✓':'');
   if(k=="exp")return esc(x.who)+(x.wof?' – '+esc(x.wof):'')+': '+eur(x.sum)+(x.paid?' · ausgezahlt':'');
   if(k=="black")return esc(x.wer)+': '+esc(x.was);
   var v=x.votes||{};return esc(x.q)+' – Stimmen: '+(Object.keys(v).map(function(n){return esc(n.replace(/_/g," "))+' ('+esc((x.opts||[])[v[n]])+')'}).join(", ")||"keine")};
  var terms=nrm(logQ).split(/\s+/).filter(Boolean);
- var match=function(x){var v=x.votes||{},h=nrm([x.by,x.upd,x.tby,x.who,x.wer,x.was,x.what,x.wof,x.name,x.cat,x.station,x.q,x.date,x.time,(x.opts||[]).join(" "),Object.keys(v).join(" ")].join(" "));return terms.every(function(t){return h.indexOf(t)>-1})};
+ var match=function(x){var v=x.votes||{},h=nrm([x.by,x.upd,x.tby,x.who,x.wer,x.was,x.what,x.wof,x.name,x.cat,x.station,x.ziel,x.q,x.date,x.time,(x.opts||[]).join(" "),Object.keys(v).join(" ")].join(" "));return terms.every(function(t){return h.indexOf(t)>-1})};
  return T.map(function(t){var all=S[t[0]],a=all.filter(match).sort(function(x,y){return(y.at||0)-(x.at||0)}),open=terms.length?a.length>0:!!logOpen[t[0]];
   if(terms.length&&!a.length)return "";
   return '<button class="lh" data-lg="'+t[0]+'"><span>'+(open?'▾':'▸')+'</span> '+t[1]+' '+t[2]+' <b>('+(terms.length?a.length+'/':'')+all.length+')</b></button>'+(open?(a.length?a.map(function(x){return '<div class="card pl"><div class="m"><div class="t" style="font-size:calc(15px + var(--fs,0px))">'+sum(t[0],x)+'</div><div class="s">von <b>'+esc(x.by||"unbekannt")+'</b>'+(x.at?' · '+fmt(x.at):'')+(x.upd?' · geändert von '+esc(x.upd)+' '+fmt(x.updAt):'')+(x.tby?' · '+(t[0]=="shop"?(x.done?"abgehakt":"zurückgesetzt"):(x.paid?"ausgezahlt":"zurückgesetzt"))+' von '+esc(x.tby):'')+'</div></div></div>'}).join(""):'<div class="s" style="margin:0 4px 8px;color:var(--mut)">Noch nichts eingetragen</div>'):'')}).join("")||'<div class="empty">Keine Treffer</div>'}
@@ -391,7 +391,7 @@ function tipAsk(id){var b=sheet('<h4>📌 Auf der Startseite zeigen?</h4><p styl
  b.querySelector("[data-x]").onclick=function(){b.remove()};b.querySelector("[data-ok]").onclick=function(){setTipHome(id,true);b.remove()}}
 function bhCount(d){var seen={},n=0;blackHits(d).forEach(function(x){var k=x.wer+"|"+x.was;if(!seen[k]){seen[k]=1;n++}});return n}
 var NAV={"Ellmau – Hartkaiserbahn":"Hartkaiserbahn Talstation, Ellmau, Tirol, Österreich","Going – Astbergbahn":"Astbergbahn Talstation, Going am Wilden Kaiser, Tirol, Österreich","Scheffau – Brandstadlbahn":"Brandstadlbahn Talstation, Scheffau am Wilden Kaiser, Tirol, Österreich","Söll – Hochsöll-Bahn":"Hochsöllbahn Talstation, Söll, Tirol, Österreich","Itter – Salvistabahn":"Salvistabahn Talstation, Itter, Tirol, Österreich","Hopfgarten – Hohe-Salve-Bahn":"Hohe Salve Bahn Talstation, Hopfgarten im Brixental, Tirol, Österreich","Brixen – SkiWelt-Bahn":"SkiWelt Bahn Talstation, Brixen im Thale, Tirol, Österreich","Brixen – Zinsbergbahn":"Zinsbergbahn Talstation, Brixen im Thale, Tirol, Österreich","Westendorf – Ki-West-Bahn":"Ki-West Bahn Talstation, Westendorf, Tirol, Österreich","Westendorf – Alpenrosenbahn":"Alpenrosenbahn Talstation, Westendorf, Tirol, Österreich"};
-function navUrl(st){var q=NAV[st]||(st&&st!="Anderes Ziel"?st:"");return q?"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(q)+"&travelmode=driving":""}
+function navUrl(st,zl){var q=st=="Anderes Ziel"?(zl||""):(NAV[st]||st||"");return q?"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(q)+"&travelmode=driving":""}
 function stShort(st){var pl=String(st||"").split(" – ")[0];if(pl==st)return st;return STATIONS.filter(function(x){return x.split(" – ")[0]==pl}).length>1?st:pl}
 var FSM=0;
 function fsStep(){try{return parseInt(localStorage.getItem("ski26fs"))||0}catch(e){return FSM}}
@@ -405,6 +405,8 @@ function themeSheet(){var cur=theme(),O=[["bunt","🌈 Bunt (wie bisher)"],["hel
  var b=sheet('<h4>Design wählen</h4><div class="adm">'+O.map(function(o){return '<button class="btn'+(o[0]==cur?' p':'')+'" data-t="'+o[0]+'">'+(o[0]==cur?'✓ ':'')+o[1]+'</button>'}).join("")+'<button class="btn" data-x>Schließen</button></div><div style="color:var(--mut);font-size:calc(12px + var(--fs,0px))">Gilt nur für dieses Gerät.</div>');
  b.querySelector("[data-x]").onclick=function(){b.remove()};
  b.querySelectorAll("[data-t]").forEach(function(x){x.onclick=function(){setTheme(x.dataset.t);b.remove()}})}
+function stLabel(x){return x.station=="Anderes Ziel"&&x.ziel?x.ziel:x.station}
+function stToday(x){return x.station=="Anderes Ziel"&&x.ziel?x.ziel:stShort(x.station)}
 function vote(id,i){var go=function(){var r=S.poll.filter(function(x){return x.id==id})[0];if(!r||!isAct(r))return;var k=mk();r.votes=r.votes||{};r.votes[k]=i;if(DB){var u={};u["votes."+k]=i;DB.collection("poll").doc(id).update(u)}else save();refresh()};
  if(me())return go();var b=sheet('<h4>Wie heißt du?</h4><label>Name (für die Umfragen)<input name="n"></label><div class="row"><button class="btn p" data-ok>Weiter</button></div>');
  b.querySelector("[data-ok]").onclick=function(){var v=b.querySelector("input").value.trim();if(!v)return;ME=v;try{localStorage.setItem("ski26me",v)}catch(e){}b.remove();go()}}
@@ -421,7 +423,7 @@ function heute(){var t=td(),c=S.cook.filter(function(x){return x.date==t}),p=S.p
  var pt=S.plan.filter(function(x){return x.date==t}),R=[],
  cookH=c.length?c.map(function(x){return '<div style="font-size:calc(17px + var(--fs,0px));font-weight:600;line-height:1.25">'+esc(x.what)+'</div><div style="font-size:calc(12px + var(--fs,0px));color:var(--mut)">Kochgruppe: '+esc(x.who)+'</div>'}).join(""):"Heute ist noch kein Abendessen eingetragen";
  S.tips.filter(tipOn).sort(function(a,b){return b.homeAt-a.homeAt}).forEach(function(x){R.push(["💡",'<b>'+esc(x.t)+'</b><div style="font-size:calc(13px + var(--fs,0px));white-space:pre-wrap;opacity:.9">'+esc(x.x)+'</div>',0,"info"])});
- if(!(pt.length&&!p.length))R.push(["🎿",p.length?p.map(function(x){return '<b>'+esc(stShort(x.station))+'</b>'+(x.time?' um '+esc(x.time)+' Uhr':'')+(x.who?' ('+esc(x.who)+')':'')}).join("<br>"):"Noch kein Skiziel für heute eingetragen",0,p.length?"plan":""]);
+ if(!(pt.length&&!p.length))R.push(["🎿",p.length?p.map(function(x){return '<b>'+esc(stToday(x))+'</b>'+(x.time?' um '+esc(x.time)+' Uhr':'')+(x.who?' ('+esc(x.who)+')':'')}).join("<br>"):"Noch kein Skiziel für heute eingetragen",0,p.length?"plan":""]);
  var simple=theme()!="bunt",pbl=simple?(np?'<b>'+np+(np==1?' Umfrage wartet':' Umfragen warten')+' auf deine Stimme</b>':""):pollBlocks();if(pbl)R.push(["📊",pbl,0,simple?"poll":""]);
  var os=S.shop.filter(function(x){return!x.done}).length;if(os)R.push(["🛒",'<b>'+os+'</b> Artikel auf der Einkaufsliste',0,"shop"]);
  R.push(["🍽️",cookH,0,c.length?"cook":""]);
@@ -437,7 +439,7 @@ function home(){
  '<h3>Unser Haus</h3><div class="grid g-home">'+t("info","🏠","Haus-Infos","Adresse &amp; WLAN")+navTile()+'</div>';
 }
 function plan(){var a=S.plan.filter(planOpen).sort(function(x,y){return(x.date+(x.time||"")).localeCompare(y.date+(y.time||""))});
- return head("Skitag-Plan","plan")+(a.length?a.map(function(x){var d=dparts(x.date);return '<div class="card" data-edit="plan" data-id="'+x.id+'"><div class="date"><b>'+d[0]+'</b><i>'+d[1]+'</i></div><div class="m"><div class="t">🚡 '+esc(x.station)+'</div><div class="s">'+(x.time?esc(x.time)+' Uhr · ':'')+esc(x.who||"alle")+'</div>'+(navUrl(x.station)?'<a class="chip" data-nav href="'+navUrl(x.station)+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;text-decoration:none">📍 Navigation starten</a>':'')+'</div></div>'}).join(""):empty("🎿","Trag über das „+“ ein, wo ihr als Nächstes Ski fahren wollt. Einfach die Talstation aus der Liste wählen."));}
+ return head("Skitag-Plan","plan")+(a.length?a.map(function(x){var d=dparts(x.date);return '<div class="card" data-edit="plan" data-id="'+x.id+'"><div class="date"><b>'+d[0]+'</b><i>'+d[1]+'</i></div><div class="m"><div class="t">'+(x.station=="Anderes Ziel"?"📌 ":"🚡 ")+esc(stLabel(x))+'</div><div class="s">'+(x.time?esc(x.time)+' Uhr · ':'')+esc(x.who||"alle")+'</div>'+(navUrl(x.station,x.ziel)?'<a class="chip" data-nav href="'+navUrl(x.station,x.ziel)+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;text-decoration:none">📍 Navigation starten</a>':'')+'</div></div>'}).join(""):empty("🎿","Trag über das „+“ ein, wo ihr als Nächstes Ski fahren wollt. Einfach die Talstation aus der Liste wählen."));}
 function poll(){var k=mk(),vt=function(x){return !isAct(x)?2:(k&&x.votes&&x.votes[k]!=null?1:0)};return head("Umfragen","poll")+(S.poll.length?S.poll.slice().sort(function(a,b){return vt(a)-vt(b)}).map(function(p){var v=p.votes||{},n=Object.keys(v).length,my=v[k],off=vt(p)==2,dn=vt(p)==1;
  return '<div class="card pl '+(off?'off':dn?'voted':'todo')+'"><div class="m"><div class="t">'+esc(p.q)+' <span class="chip '+(dn?'paid':'')+'" style="padding:2px 8px;font-size:calc(11px + var(--fs,0px))">'+(off?'Beendet':dn?'✓ Abgestimmt':'Offen')+'</span>'+(canPoll(p)?' <button class="chip" data-pact="'+p.id+'">'+(off?'▶ Aktivieren':'⏸ Beenden')+'</button>':'')+' <button class="chip" data-edit="poll" data-id="'+p.id+'">✎</button></div>'+(p.opts||[]).map(function(o,i){var c=Object.keys(v).filter(function(x){return v[x]==i}).length;
  return '<button class="opt'+(k&&my===i?' me':'')+'"'+(off?' disabled':'')+' data-vote="'+i+'" data-id="'+p.id+'"><i style="width:'+(n?Math.round(c/n*100):0)+'%"></i><span>'+esc(o)+'</span><b>'+c+'</b></button>'}).join("")+'<div class="s">'+n+(n==1?' Stimme':' Stimmen')+'</div></div></div>'}).join(""):empty("📊","Starte über das „+“ eine Umfrage für die ganze Gruppe, zum Beispiel: Pizza oder Pasta?"));}
@@ -499,7 +501,7 @@ var FORMS={
  exp:{title:"Neue Ausgabe",f:[["date","Datum","date"],["who","Wer hat bezahlt?","text"],["wof","Wofür?","text"],["sum","Summe in €","num"]],req:["date","who","wof","sum"]},
  black:{title:"Neuer Blacklist-Eintrag",f:[["wer","Wer?","text"],["was","Was magst Du nicht o. bist allergisch dagegen?","text"]],req:["wer","was"]}
 };
-FORMS.plan={title:"Skitag planen",f:[["date","Datum","date"],["station","Talstation","sel",null,STATIONS],["time","Uhrzeit (optional)","time"],["who","Wer fährt mit? (optional)","text"]],req:["date","station"]};
+FORMS.plan={title:"Skitag planen",f:[["date","Datum","date"],["station","Talstation","sel",null,STATIONS],["ziel","Ziel / Aktivität (Freitext)","text","z. B. Almwanderung mit Rodeln"],["time","Uhrzeit (optional)","time"],["who","Wer fährt mit? (optional)","text"]],req:["date","station"]};
 FORMS.poll={title:"Neue Umfrage",f:[["q","Frage","text"],["opts","Antworten","area","Eine Antwort pro Zeile"],["active","Status","sel",null,["Aktiv","Deaktiviert"]]],req:["q","opts"]};
 FORMS.info={title:"Haus-Infos",f:[["addr","Adresse","text"],["kont","Ansprechpartner fürs Haus","text"],["tel","Telefonnummer","tel"],["an","Früheste Anreise","datetime-local"],["ab","Späteste Abreise","datetime-local"],["wifi","WLAN-Name","text"],["pw","WLAN-Passwort","text"]],req:[]};
 FORMS.tips={title:"Nützliches eintragen",f:[["t","Thema (z. B. Herd, Heizung, Müll)","text"],["x","Beschreibung","area"]],req:["t","x"]};
@@ -519,6 +521,7 @@ function openForm(kind,id){
  b.querySelector("[data-ok]").onclick=function(){
   var er=b.querySelector("[data-err]");er.style.color="#ff9aa4";er.textContent="";var o={};F.f.forEach(function(f){o[f[0]]=b.querySelector('[name="'+f[0]+'"]').value.trim()});
   for(var i=0;i<F.req.length;i++){if(!o[F.req[i]]){b.querySelector("[data-err]").textContent="Du hast was vergessen. Bitte überprüfe deine Eingabe.";return}}
+  if(kind=="plan"){if(o.station!="Anderes Ziel")o.ziel="";else if(!o.ziel){b.querySelector("[data-err]").textContent="Bitte das Ziel als Freitext eintragen.";return}}
   if(kind=="poll"){o.opts=o.opts.split("\n").map(function(x){return x.trim()}).filter(Boolean);if(o.opts.length<2){b.querySelector("[data-err]").textContent="Bitte mindestens zwei Antworten eintragen.";return}}
   if(kind=="poll"&&o.active=="Deaktiviert"&&(!rec||isAct(rec)))o.endAt=Date.now();
   if(o.sum!==undefined)o.sum=parseFloat(String(o.sum).replace(",","."))||0;
@@ -527,6 +530,7 @@ function openForm(kind,id){
   b.remove();refresh();if(kind=="cook")blackCheck((rec||o).what);if(kind=="exp"&&!rec)billNote();if(kind=="tips"&&!rec)tipAsk(o.id)};
  if(kind=="shop"){var inp=b.querySelector("[name=name]"),cs=b.querySelector("[name=cat]"),M=itemMap(),dl=document.createElement("datalist");dl.id="shopdl";dl.innerHTML=Object.keys(M).map(function(k){return '<option value="'+esc(k)+'">'}).join("");b.appendChild(dl);inp.setAttribute("list","shopdl");inp.setAttribute("autocomplete","off");
   inp.addEventListener("input",function(){var v=inp.value.trim().toLowerCase(),k=Object.keys(M).filter(function(x){return x.toLowerCase()==v})[0];if(k&&!rec)cs.value=M[k]})}
+ if(kind=="plan"){var stl=b.querySelector("[name=station]"),zw=b.querySelector("[name=ziel]").parentNode,zt=function(){zw.style.display=stl.value=="Anderes Ziel"?"":"none"};stl.addEventListener("change",zt);zt()}
  var d=b.querySelector("[data-del]");
  if(d)armBtn(d,function(){del(kind,id);b.remove();refresh()});
 }
