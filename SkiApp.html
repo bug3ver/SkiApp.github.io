@@ -236,6 +236,31 @@ html[data-theme] .sheet,html[data-theme] .lbox{background:var(--glass)}
 html[data-theme] #login{background:var(--bg)}
 html[data-theme] input,html[data-theme] select,html[data-theme] textarea{background:var(--glass2);color:var(--tx);border:1px solid var(--line)}
 html[data-theme] .toast{background:var(--tx);color:var(--bg)}
+.cd{margin:6px 0 12px;padding:12px 10px 10px;border-radius:18px;border:1px solid rgba(124,240,255,.45);background:linear-gradient(160deg,rgba(44,196,255,.16),rgba(176,123,255,.14));box-shadow:0 0 22px -6px var(--ac),inset 0 0 18px -10px var(--ac2)}
+.cdl{font-size:calc(12px + var(--fs,0px));letter-spacing:.8px;text-transform:uppercase;color:var(--mut);text-align:center;margin-bottom:8px}
+.cdr{display:flex;gap:8px;justify-content:center}
+.cdb{flex:1;max-width:78px;text-align:center;padding:8px 2px 6px;border-radius:12px;background:rgba(8,20,36,.45);border:1px solid rgba(124,240,255,.3)}
+.cdb b{display:block;font-size:calc(28px + var(--fs,0px));line-height:1.1;color:var(--ac2);text-shadow:0 0 14px var(--ac),0 0 28px rgba(44,196,255,.5);font-variant-numeric:tabular-nums}
+.cdb i{display:block;font-style:normal;font-size:calc(11px + var(--fs,0px));color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
+.cdend{text-align:center;font-weight:700;font-size:calc(17px + var(--fs,0px));padding:14px 10px}
+html[data-theme] .cd{background:var(--glass2);border-color:var(--line)}
+html[data-theme] .cdb{background:var(--glass);border-color:var(--line)}
+.agrp{font-size:calc(11px + var(--fs,0px));letter-spacing:1.2px;text-transform:uppercase;color:var(--ac2);margin:16px 2px 8px}
+.arow2{display:flex;gap:8px;margin-bottom:10px}
+.adm .arow2 .btn{flex:1;width:auto;margin:0;padding:12px 8px;text-align:center}
+.adn{color:var(--mut);font-size:calc(12px + var(--fs,0px));margin:0 2px 10px;line-height:1.4}
+.adt{border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:rgba(255,255,255,.04)}
+.adt>summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.adt>summary::-webkit-details-marker{display:none}
+.adt>summary::after{content:"▸";color:var(--mut)}
+.adt[open]>summary::after{content:"▾"}
+.adt>div{padding:0 14px 6px}
+.adst{margin-left:auto;font-weight:500;color:var(--mut);font-size:calc(12px + var(--fs,0px))}
+.adt.danger>summary{color:#ffb3bb}
+html[data-theme] .adt.danger>summary{color:var(--bad)}
+.cd3 .cdb{max-width:106px}
+.cd3 .cdb b{font-size:calc(38px + var(--fs,0px))}
+.cd3 .cdb i{font-size:calc(12px + var(--fs,0px))}
 </style>
 <script>window.FIREBASE_CONFIG={apiKey:"AIzaSyALOJBmTIZK8xXqswI3A-obtQbsRAwZ-EY",authDomain:"skiapp-ef7b2.firebaseapp.com",projectId:"skiapp-ef7b2",storageBucket:"skiapp-ef7b2.firebasestorage.app",messagingSenderId:"603404948431",appId:"1:603404948431:web:1e3a994b4af95e9e9db8ba"};window.AUTH_EMAIL="ski2026@gruppe.app";window.VAPID_KEY="DEIN_VAPID_KEY";</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -376,10 +401,10 @@ function fwSize(){if(FW.c){FW.c.width=innerWidth;FW.c.height=innerHeight}}
 function fwStart(){if(FW.on)return;var c=document.createElement("canvas");c.id="fwc";document.body.appendChild(c);FW.c=c;FW.x=c.getContext("2d");FW.on=true;FW.P=[];FW.R=[];fwSize();addEventListener("resize",fwSize);FW.raf=requestAnimationFrame(fwTick)}
 function fwStop(){FW.on=false;cancelAnimationFrame(FW.raf);if(FW.c){FW.c.remove();FW.c=null}}
 function fwTick(){if(!FW.on||!FW.c)return;var x=FW.x,W=FW.c.width,H=FW.c.height;x.globalCompositeOperation="source-over";x.clearRect(0,0,W,H);
- if(Math.random()<.04&&FW.R.length<3)FW.R.push({x:W*(.15+.7*Math.random()),y:H,ty:H*(.12+.35*Math.random()),h:Math.floor(Math.random()*360)});
+ if(Math.random()<.027&&FW.R.length<3)FW.R.push({x:W*(.15+.7*Math.random()),y:H,ty:H*(.12+.35*Math.random()),h:Math.floor(Math.random()*360)});
  x.globalCompositeOperation="lighter";
- FW.R=FW.R.filter(function(r){r.y-=H*.012;x.fillStyle="hsl("+r.h+",100%,70%)";x.fillRect(r.x-1.5,r.y,3,9);if(r.y<=r.ty){for(var i=0;i<60;i++){var a=Math.random()*6.283,sp=Math.random()*4+1;FW.P.push({x:r.x,y:r.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,l:1,h:r.h+Math.random()*40})}return false}return true});
- FW.P=FW.P.filter(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.vx*=.985;p.l-=.014;if(p.l<=0)return false;x.fillStyle="hsla("+p.h+",100%,65%,"+p.l+")";x.beginPath();x.arc(p.x,p.y,2,0,6.3);x.fill();return true});
+ FW.R=FW.R.filter(function(r){r.y-=H*.008;x.fillStyle="hsl("+r.h+",100%,70%)";x.fillRect(r.x-1.5,r.y,3,9);if(r.y<=r.ty){for(var i=0;i<60;i++){var a=Math.random()*6.283,sp=(Math.random()*4+1)*.667;FW.P.push({x:r.x,y:r.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,l:1,h:r.h+Math.random()*40})}return false}return true});
+ FW.P=FW.P.filter(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.0222;p.vx*=.9899;p.l-=.0093;if(p.l<=0)return false;x.fillStyle="hsla("+p.h+",100%,65%,"+p.l+")";x.beginPath();x.arc(p.x,p.y,2,0,6.3);x.fill();return true});
  FW.raf=requestAnimationFrame(fwTick)}
 function fwSync(){var want=fwOn()&&theme()=="bunt"&&!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);if(want&&!FW.on)fwStart();else if(!want&&FW.on)fwStop()}
 setInterval(fwSync,1000);
@@ -401,12 +426,23 @@ var THM="bunt",MORE=false;
 function theme(){try{return localStorage.getItem("ski26th")||"bunt"}catch(e){return THM}}
 function thApply(){var t=theme(),h=document.documentElement;if(t=="bunt")h.removeAttribute("data-theme");else h.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t=="hell"?"#f5f7fa":t=="dunkel"?"#14181d":"#0b1a2b")}
 function setTheme(v){THM=v;try{localStorage.setItem("ski26th",v)}catch(e){}thApply();refresh()}
-function themeSheet(){var cur=theme(),O=[["bunt","🌈 Bunt (wie bisher)"],["hell","☀️ Schlicht hell"],["dunkel","🌙 Schlicht dunkel"]];
+function themeSheet(){var cur=theme(),O=[["bunt","🌈 Bunt (Standard)"],["hell","☀️ Schlicht hell"],["dunkel","🌙 Schlicht dunkel"]];
  var b=sheet('<h4>Design wählen</h4><div class="adm">'+O.map(function(o){return '<button class="btn'+(o[0]==cur?' p':'')+'" data-t="'+o[0]+'">'+(o[0]==cur?'✓ ':'')+o[1]+'</button>'}).join("")+'<button class="btn" data-x>Schließen</button></div><div style="color:var(--mut);font-size:calc(12px + var(--fs,0px))">Gilt nur für dieses Gerät.</div>');
  b.querySelector("[data-x]").onclick=function(){b.remove()};
  b.querySelectorAll("[data-t]").forEach(function(x){x.onclick=function(){setTheme(x.dataset.t);b.remove()}})}
 function stLabel(x){return x.station=="Anderes Ziel"&&x.ziel?x.ziel:x.station}
 function stToday(x){return x.station=="Anderes Ziel"&&x.ziel?x.ziel:stShort(x.station)}
+function cdCfg(){var c=S.config.filter(function(x){return x.id=="timer"})[0];return c&&c.on&&c.at?c:null}
+function p2(n){return n<10?"0"+n:""+n}
+function cdParts(at){var t=new Date(at).getTime();if(isNaN(t))return null;var ms=Math.max(0,t-Date.now()),q=Math.floor(ms/1e3);return{d:Math.floor(q/86400),h:Math.floor(q%86400/3600),m:Math.floor(q%3600/60),s:q%60,done:t<=Date.now()}}
+function timerBlock(){var c=cdCfg();if(!c)return "";var p=cdParts(c.at);if(!p)return "";
+ if(p.done)return '<div class="cd cdend">🎉 '+(c.label?esc(c.label)+": ":"")+'Es ist soweit!</div>';
+ var box=function(i,v,l){return '<div class="cdb"><b id="'+i+'">'+v+'</b><i>'+l+'</i></div>'};
+ return '<div class="cd'+(p.d==0?' cd3':'')+'"><div class="cdl">⏱ '+esc(c.label||"Countdown")+'</div><div class="cdr">'+(p.d>0?box("cdd",p.d,"Tage"):"")+box("cdh",p2(p.h),"Std.")+box("cdm",p2(p.m),"Min.")+box("cds",p2(p.s),"Sek.")+'</div></div>'}
+function cdTick(){var c=cdCfg();if(!c)return;var p=cdParts(c.at);if(!p)return;
+ if(p.done){if(!document.querySelector(".cdend")&&document.querySelector(".cd"))refresh();return}
+ if(p.d==0&&document.getElementById("cdd")){refresh();return}var set=function(i,v){var e=document.getElementById(i);if(e)e.textContent=v};set("cdd",p.d);set("cdh",p2(p.h));set("cdm",p2(p.m));set("cds",p2(p.s))}
+setInterval(cdTick,1000);
 function vote(id,i){var go=function(){var r=S.poll.filter(function(x){return x.id==id})[0];if(!r||!isAct(r))return;var k=mk();r.votes=r.votes||{};r.votes[k]=i;if(DB){var u={};u["votes."+k]=i;DB.collection("poll").doc(id).update(u)}else save();refresh()};
  if(me())return go();var b=sheet('<h4>Wie heißt du?</h4><label>Name (für die Umfragen)<input name="n"></label><div class="row"><button class="btn p" data-ok>Weiter</button></div>');
  b.querySelector("[data-ok]").onclick=function(){var v=b.querySelector("input").value.trim();if(!v)return;ME=v;try{localStorage.setItem("ski26me",v)}catch(e){}b.remove();go()}}
@@ -427,7 +463,7 @@ function heute(){var t=td(),c=S.cook.filter(function(x){return x.date==t}),p=S.p
  var simple=theme()!="bunt",pbl=simple?(np?'<b>'+np+(np==1?' Umfrage wartet':' Umfragen warten')+' auf deine Stimme</b>':""):pollBlocks();if(pbl)R.push(["📊",pbl,0,simple?"poll":""]);
  var os=S.shop.filter(function(x){return!x.done}).length;if(os)R.push(["🛒",'<b>'+os+'</b> Artikel auf der Einkaufsliste',0,"shop"]);
  R.push(["🍽️",cookH,0,c.length?"cook":""]);
- return '<div class="today"><h3 style="margin-top:0">Heute · '+new Date().toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})+'</h3>'+R.map(function(r){return '<div class="tr"'+(r[3]?' data-go="'+r[3]+'" style="cursor:pointer"':'')+'><span>'+r[0]+'</span><div>'+r[1]+'</div></div>'}).join("")+
+ return '<div class="today"><h3 style="margin-top:0">Heute · '+new Date().toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})+'</h3>'+timerBlock()+R.map(function(r){return '<div class="tr"'+(r[3]?' data-go="'+r[3]+'" style="cursor:pointer"':'')+'><span>'+r[0]+'</span><div>'+r[1]+'</div></div>'}).join("")+
  (pushReady()?'<div class="row" style="margin-top:10px;flex-wrap:wrap">'+(pushOn()?'<span class="chip paid">🔔 Push aktiv</span>':'<button class="chip" data-push>🔔 Push aktivieren</button>')+'<button class="chip" data-ann>🍽️ Abendessen eröffnen</button></div>':'')+'<div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;color:var(--mut);font-size:calc(12px + var(--fs,0px));margin-top:6px"><span>'+(DB?"🟢 Live synchronisiert":"⚪ Lokaler Modus")+'</span><a data-name style="color:var(--ac2);cursor:pointer;text-align:center">👤 '+esc(me()||"Name setzen")+'</a><span style="justify-self:end;display:flex;gap:6px"><button class="chip thb" data-themebtn aria-label="Design">🎨</button><button class="chip snowb '+(snowOn()?"on":"off")+'" data-snow aria-label="Schneeeffekt">❄️</button></span></div></div>'}
 function home(){
  var t=function(go,e,n,sub){return '<button class="tile" data-go="'+go+'"><span class="e">'+e+'</span><span><b>'+n+'</b><small>'+sub+'</small></span></button>'};
@@ -535,8 +571,32 @@ function openForm(kind,id){
  if(d)armBtn(d,function(){del(kind,id);b.remove();refresh()});
 }
 function admin(){
- var L=[["cook","Kochdienste","Bist Du sicher, dass Du die Abendessen-Dienste leeren willst?"],["shop","Einkaufsliste","Bist Du sicher, dass Du die Einkaufsliste leeren willst?"],["exp","Ausgaben","Bist Du sicher, dass Du die Ausgaben leeren willst?"],["black","Blacklist","Bist Du sicher, dass Du die Blacklist löschen willst?"],["plan","Skitag-Plan","Skitag-Plan wirklich leeren?"],["poll","Umfragen","Alle Umfragen wirklich löschen?"],["tips","Nützliches","Nützliches wirklich leeren?"]];
- var b=sheet('<div class="adm"><h4>Admin</h4><div style="color:var(--mut);margin:-6px 0 14px;font-size:calc(13px + var(--fs,0px))">Nutzer ('+S.devices.length+'): '+S.devices.map(function(d){return esc(d.name)}).join(", ")+'</div><button class="btn p" data-log>📋 Protokoll: Wer hat was eingetragen?</button><button class="btn p" data-users>👥 Nutzer &amp; Geräte</button><button class="btn" data-fx>🎆 Feuerwerk im Hintergrund: '+(fwOn()?'An':'Aus')+'</button><div class="fsrow"><button class="btn" data-fsm>A−</button><button class="btn" id="fsv" data-fsr>Standard</button><button class="btn" data-fsp>A+</button></div><div style="color:var(--mut);font-size:calc(12px + var(--fs,0px));margin:-4px 0 12px">Schriftgröße nur für dieses Gerät. Mitte antippen = zurücksetzen.</div><label style="margin-top:6px">Kassenwart (Name wie auf seinem Gerät)<input name="kw" value="'+esc(kassName())+'" autocomplete="off" placeholder="z. B. Tom"></label><button class="btn p" data-kw>💶 Kassenwart speichern</button>'+L.map(function(l){return '<button class="btn d" data-k="'+l[0]+'" data-l="'+l[1]+' leeren">'+l[1]+' leeren</button>'}).join("")+'<button class="btn" data-logout>Admin-Modus beenden</button>'+(DB?'<button class="btn" data-signout>🔒 Von diesem Gerät abmelden</button>':'')+'<button class="btn" data-x>Schließen</button></div>');b.querySelector("[data-log]").onclick=function(){b.remove();cur="log";render()};b.querySelector("[data-users]").onclick=function(){b.remove();cur="users";render()};b.querySelector("[data-kw]").onclick=function(){var v=b.querySelector("[name=kw]").value.trim();put("config",{id:"kass",name:v});b.remove();refresh();toast(v?"Kassenwart: "+v:"Kassenwart entfernt")};var fsu=function(){var v=fsStep();b.querySelector("#fsv").textContent=v?(v>0?"+":"")+v+" px":"Standard"};fsu();b.querySelector("[data-fsm]").onclick=function(){setFs(fsStep()-1);fsu()};b.querySelector("[data-fsp]").onclick=function(){setFs(fsStep()+1);fsu()};b.querySelector("[data-fsr]").onclick=function(){setFs(0);fsu()};b.querySelector("[data-fx]").onclick=function(){put("config",{id:"fx",on:!fwOn()});b.remove();refresh();fwSync()};var so=b.querySelector("[data-signout]");if(so)so.onclick=function(){b.remove();firebase.auth().signOut()};b.querySelector("[data-logout]").onclick=function(){ADM=false;try{localStorage.removeItem("ski26admin")}catch(e){}b.remove();refresh()};
+ var L=[["cook","Kochdienste"],["shop","Einkaufsliste"],["exp","Ausgaben"],["black","Blacklist"],["plan","Skitag-Plan"],["poll","Umfragen"],["tips","Nützliches"]];
+ var tcfg=function(){return S.config.filter(function(x){return x.id=="timer"})[0]||{}},cc=tcfg();
+ var b=sheet('<div class="adm"><h4>Admin</h4>'+
+  '<div class="agrp">Übersicht</div><div class="arow2"><button class="btn p" data-log>📋 Protokoll</button><button class="btn p" data-users>👥 Nutzer &amp; Geräte</button></div>'+
+  '<div class="adn">Nutzer ('+S.devices.length+'): '+S.devices.map(function(d){return esc(d.name)}).join(", ")+'</div>'+
+  '<div class="agrp">Einstellungen</div>'+
+  '<button class="btn" data-fx>🎆 Feuerwerk im Hintergrund: '+(fwOn()?'An':'Aus')+'</button>'+
+  '<details class="adt"><summary>⏱ Countdown <span class="adst" id="cdst"></span></summary><div><label>Titel (optional)<input name="cdlb" value="'+esc(cc.label||"")+'" placeholder="z. B. Bis zur Abreise" autocomplete="off"></label><label>Datum und Uhrzeit<input name="cdat" type="datetime-local" value="'+esc(cc.at||"")+'"></label><div class="arow2"><button class="btn" data-cds>💾 Speichern</button><button class="btn p" id="cdon" data-cdon></button></div><div class="adn">Der Countdown erscheint für alle ganz oben in der Heute-Kachel, solange er aktiv ist.</div></div></details>'+
+  '<details class="adt"><summary>💶 Kassenwart <span class="adst">'+esc(kassName()||"nicht gesetzt")+'</span></summary><div><label>Name wie auf seinem Gerät<input name="kw" value="'+esc(kassName())+'" autocomplete="off" placeholder="z. B. Tom"></label><button class="btn p" data-kw>💶 Kassenwart speichern</button></div></details>'+
+  '<details class="adt"><summary>🔤 Schriftgröße <span class="adst">nur dieses Gerät</span></summary><div><div class="fsrow"><button class="btn" data-fsm>A−</button><button class="btn" id="fsv" data-fsr>Standard</button><button class="btn" data-fsp>A+</button></div><div class="adn">Mitte antippen = zurücksetzen.</div></div></details>'+
+  '<div class="agrp">Daten</div>'+
+  '<details class="adt danger"><summary>🗑️ Listen leeren <span class="adst">'+L.length+' Listen</span></summary><div>'+L.map(function(l){return '<button class="btn d" data-k="'+l[0]+'" data-l="'+l[1]+' leeren">'+l[1]+' leeren</button>'}).join("")+'<div class="adn">Zum Löschen zweimal tippen. Das lässt sich nicht rückgängig machen.</div></div></details>'+
+  '<div class="agrp">Konto</div><div class="arow2"><button class="btn" data-logout>Admin-Modus beenden</button>'+(DB?'<button class="btn" data-signout>🔒 Abmelden</button>':'')+'</div>'+
+  '<button class="btn" data-x>Schließen</button></div>');
+ b.querySelector("[data-log]").onclick=function(){b.remove();cur="log";render()};
+ b.querySelector("[data-users]").onclick=function(){b.remove();cur="users";render()};
+ b.querySelector("[data-fx]").onclick=function(){put("config",{id:"fx",on:!fwOn()});b.remove();refresh();fwSync()};
+ var cdUi=function(){var on=!!tcfg().on;b.querySelector("#cdst").textContent=on?"aktiv":"aus";b.querySelector("#cdon").textContent=on?"⏸ Deaktivieren":"▶ Aktivieren"};cdUi();
+ var cdv=function(){return{at:b.querySelector("[name=cdat]").value,lb:b.querySelector("[name=cdlb]").value.trim()}};
+ b.querySelector("[data-cds]").onclick=function(){var v=cdv();if(!v.at){toast("Bitte Datum und Uhrzeit wählen");return}put("config",{id:"timer",on:!!tcfg().on,at:v.at,label:v.lb});refresh();cdUi();toast("Countdown gespeichert")};
+ b.querySelector("[data-cdon]").onclick=function(){var v=cdv(),on=!tcfg().on;if(on&&!v.at){toast("Bitte erst Datum und Uhrzeit eintragen");return}put("config",{id:"timer",on:on,at:v.at||tcfg().at||"",label:v.lb});refresh();cdUi();toast(on?"Countdown aktiviert":"Countdown deaktiviert")};
+ b.querySelector("[data-kw]").onclick=function(){var v=b.querySelector("[name=kw]").value.trim();put("config",{id:"kass",name:v});b.remove();refresh();toast(v?"Kassenwart: "+v:"Kassenwart entfernt")};
+ var fsu=function(){var v=fsStep();b.querySelector("#fsv").textContent=v?(v>0?"+":"")+v+" px":"Standard"};fsu();
+ b.querySelector("[data-fsm]").onclick=function(){setFs(fsStep()-1);fsu()};b.querySelector("[data-fsp]").onclick=function(){setFs(fsStep()+1);fsu()};b.querySelector("[data-fsr]").onclick=function(){setFs(0);fsu()};
+ var so=b.querySelector("[data-signout]");if(so)so.onclick=function(){b.remove();firebase.auth().signOut()};
+ b.querySelector("[data-logout]").onclick=function(){ADM=false;try{localStorage.removeItem("ski26admin")}catch(e){}b.remove();refresh()};
  b.querySelector("[data-x]").onclick=function(){b.remove()};
  b.querySelectorAll("[data-k]").forEach(function(btn){armBtn(btn,function(){clr(btn.dataset.k);b.remove();refresh()},"Wirklich leeren? Nochmal tippen")});
 }
